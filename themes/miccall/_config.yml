@@ -30,7 +30,7 @@ Nav:
         About: 
             link: "/about/"
         Project:
-            link: "/gallery/"
+            link: "/projects/"
 
 MainFirst:
     name: Chih Ying Yen
