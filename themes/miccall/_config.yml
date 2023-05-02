@@ -38,9 +38,9 @@ MainFirst:
     pic_url: /img/me.jpg
     goto_ulr: ""
 
-Gallery :
-    title: Mr.metro 
-    description: Just another fine responsive 
+Gallery:
+    title: My Creations
+    description: Anything worth doing well is worth doing poorly at first. <br>
 
 # ---------------------------------------------------------------
 # Style Settings

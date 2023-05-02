@@ -1,0 +1,11 @@
+Build Dataflywheel:
+  full_link: https://camo.githubusercontent.com/5b00409dba5f5ee1ab12ce7da1c55f7191498e49abe32bf09fc077ac8342986e/68747470733a2f2f692e696d6775722e636f6d2f65344e546d31722e676966
+  thumb_link: 
+  descr: 使用 Streamlit、GCP、Docker 等工具建立並部署能實踐資料飛輪的鳥兒分類器。
+  link: https://github.com/eatPizza311/iThome-2021ironman/tree/main/build_dataflywheel
+
+FastAPI Deployment:
+  full_link: https://camo.githubusercontent.com/72215845069d873ab3975cea97e51295d3952a51e1b515436ddd9ce067c7ba98/68747470733a2f2f692e696d6775722e636f6d2f52436c347978562e706e67
+  thumb_link: 
+  descr: 使用 fastAPI 部署 YOLOv4 並利用內建與自行撰寫的 Client 與其進行互動。
+  link: https://github.com/eatPizza311/iThome-2021ironman/tree/main/fastAPI_deployment

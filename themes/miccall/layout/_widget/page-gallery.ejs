@@ -5,7 +5,7 @@
 
 				<!-- Header -->
 					<header id="gallery_header">
-						<h1><%- config.title %></h1>
+						<h1><%- theme.Gallery.title %></h1>
 						<p><%-theme.Gallery.description %>    author : <a href="<%- config.root%>" style="border-bottom: none;"><%- config.author%></a></p>
 						<ul class="gallery_icons">
 		                    <% for (var i in theme.Nav.icon) { %>
@@ -24,8 +24,8 @@
 		                <% for (var i in site.data.gallery) { %>					
 								<article>
 									<a class="thumbnail" href="<%= site.data.gallery[i].full_link %>" data-position="left center"><img src="<%= site.data.gallery[i].full_link %>" alt="" /></a>
-									<h2><%= i %></h2>
-									<p><%= site.data.gallery[i].descr %></p>
+									<h2><a href="<%= site.data.gallery[i].link %>"> <%= i %> <i class="fa fa-github"></i>  </a></h2>
+									<p><%= site.data.gallery[i].descr %> </p>
 								</article>
 			                <% } %>
 			            <% } %>
