@@ -106,4 +106,4 @@ deploy:
   type: git
   repo: "https://github.com/eatPizza311/eatPizza311.github.io"
   branch: gh-pages
-  message: 
+  message:

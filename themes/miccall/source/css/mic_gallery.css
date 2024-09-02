@@ -815,14 +815,24 @@
 	}
 
 		#gallery_header h1 {
+            text-align: left;
 			font-size: 2.25em;
 			font-weight: 700;
+		}
+
+		#gallery_header p#description {
+            text-align: left;
+            white-space: normal;
 		}
 
 /* Footer */
 
 	#footer {
 		padding: 2.25em 2.25em 1em 2.25em ;
+        position: absolute; /* Position footer absolutely */
+        bottom: 0; /* Place it at the bottom */
+        left: 0; /* Align it to the left */
+        width: 100%; /* Make it span the full width */
 	}
 
 		#footer .copyright {
@@ -1240,3 +1250,4 @@
 				}
 
 		}
+

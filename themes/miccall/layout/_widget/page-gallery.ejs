@@ -6,7 +6,8 @@
 				<!-- Header -->
 					<header id="gallery_header">
 						<h1><%- theme.Gallery.title %></h1>
-						<p><%-theme.Gallery.description %>    author : <a href="<%- config.root%>" style="border-bottom: none;"><%- config.author%></a></p>
+						<p id="description"><%-theme.Gallery.description %> </p>
+                        <p><a href="<%- config.root%>" style="border-bottom: none;">Go back to blog</a></p>
 						<ul class="gallery_icons">
 		                    <% for (var i in theme.Nav.icon) { %>
 		                    <li>
@@ -35,7 +36,7 @@
 				<!-- Footer -->
 					<footer id="footer">
 						<ul class="copyright">
-                <li>&copy;Powered By <a href="https://hexo.io/zh-cn/" style="border-bottom: none;">hexo</a></li>
+                <li>&copy;Powered By <a href="https://hexo.io/zh-tw/" style="border-bottom: none;">hexo</a></li>
                 <li>Design: <a href="http://miccall.tech " style="border-bottom: none;">miccall</a></li>
 						</ul>
 					</footer>

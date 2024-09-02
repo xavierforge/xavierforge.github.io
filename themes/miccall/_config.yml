@@ -4,43 +4,43 @@
 
 # Head info
 head:
-    favicon: "/img/logo_miccall.png"
-    keywords: chihying
-    backgroundpic : "img/bg.jpg"
+  favicon: "/img/logo_miccall.png"
+  keywords: chihying
+  backgroundpic: "img/bg.jpg"
 
 Intro:
-    name: ChihYing
-    slogan: "The present is the only thing that has no end. <br> — Erwin Schrödinger"
-    HeadButton: ChihYing
+  name: ChihYing
+  slogan: "The present is the only thing that has no end. <br> — Erwin Schrödinger"
+  HeadButton: ChihYing
 
 Nav:
-    Home_name: Home
-    is_use_categories : true 
-    categories_name: Categories
-    is_use_archives : false
-    archives_name: Archives
-    
-    #Social
-    # for more icons, please see http://fontawesome.io/icons/#brand
-    icon:
-        github: https://github.com/eatPizza311
-        linkedin: https://www.linkedin.com/in/chih-ying-yen-705bb1187/
-        
-    pages:
-        About: 
-            link: "/about/"
-        Project:
-            link: "/projects/"
+  Home_name: Home
+  is_use_categories: true
+  categories_name: Categories
+  is_use_archives: false
+  archives_name: Archives
+
+  #Social
+  # for more icons, please see http://fontawesome.io/icons/#brand
+  icon:
+    github: https://github.com/eatPizza311
+    linkedin: https://www.linkedin.com/in/chih-ying-yen/
+
+  pages:
+    About:
+      link: "/about/"
+    Portfolio:
+      link: "/portfolio/"
 
 MainFirst:
-    name: Chih Ying Yen
-    description: A passionate AI/ML developer
-    pic_url: /img/me.jpg
-    goto_ulr: ""
+  name: Yen Chih Ying
+  description: Lifelong learner and MLOps advocate.
+  pic_url: /img/me.jpg
+  goto_ulr: ""
 
 Gallery:
-    title: My Creations
-    description: Anything worth doing well is worth doing poorly at first. <br>
+  title: My Creations 🤖
+  description: Anything worth doing well is worth doing poorly at first. - Brian Tracy<br>
 
 # ---------------------------------------------------------------
 # Style Settings
@@ -58,50 +58,50 @@ fonts: FZLTCXHJW, "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB"
 # Available value of "use":
 #     duoshuo | disqus | disqus_click | changyan
 comment:
-    use: disqus_click
-    shortname: eatpizza311 
-    duoshuo_thread_key_type: path
-    duoshuo_embed_js_url: "https://static.duoshuo.com/embed.js"
-    changyan_appid:
-    changyan_conf:
-    changyan_thread_key_type: path
-    # 使用 valine 请先执行 npm install valine --save
-    valine: # Valine Comment System https://github.com/xCss/Valine
-       on: true
-       appId: 'your appId'
-       appKey: 'your appkey'
-       notify: true
-       verify: false
-       placeholder: Please leave your footprints
-       avatar: ''
-       avatar_cdn: https://gravatar.loli.net/avatar/ # avatar CDN address, default gravatar.loli.net
-       pageSize: 10 # comments of one page
+  use: disqus_click
+  shortname: eatpizza311
+  duoshuo_thread_key_type: path
+  duoshuo_embed_js_url: "https://static.duoshuo.com/embed.js"
+  changyan_appid:
+  changyan_conf:
+  changyan_thread_key_type: path
+  # 使用 valine 请先执行 npm install valine --save
+  valine:
+    # Valine Comment System https://github.com/xCss/Valine
+    on: true
+    appId: 'your appId'
+    appKey: 'your appkey'
+    notify: true
+    verify: false
+    placeholder: Please leave your footprints
+    avatar: ''
+    avatar_cdn: https://gravatar.loli.net/avatar/ # avatar CDN address, default gravatar.loli.net
+    pageSize: 10 # comments of one page
 
 # Search Systems
 # Available value:
 #     swiftype | google | local
 search:
-    use: google
-    swiftype_key: Just another fine responsive  
-    
+  use: google
+  swiftype_key: Just another fine responsive
 
 # Leancloud Views
 leancloud:
-    enable: false
-    app_id: #你的 app_id
-    app_key: #你的 app_key
-    av_core_mini: "https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"
+  enable: false
+  app_id: #你的 app_id
+  app_key: #你的 app_key
+  av_core_mini: "https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"
 
 # Busuanzi 不蒜子 Views
 busuanzi:
-    enable: true
-    all_site_uv: true
-    post_pv: true
-    busuanzi_pure_mini_js: "busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"
-
+  enable: true
+  all_site_uv: true
+  post_pv: true
+  busuanzi_pure_mini_js: "busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"
 
 # Mathjax 支持库 
 mathjax:
   enable: true
   per_page: false
   cdn: //cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML
+
