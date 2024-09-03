@@ -108,7 +108,7 @@
 - Articles
 
   1. The folder fo articles is `source/_post`.
-  2. Create a `.md` file with following structure:
+  2. Create a `.md` file with following structure (Use [`hexo new`](https://hexo.io/zh-tw/docs/commands#new)):
 
      ```Markdown
      ---
@@ -124,4 +124,4 @@
      CONTENT
 
      ```
-  
+- Deploy to GitHub Pages: See [document](https://hexo.io/zh-tw/docs/github-pages.html).
