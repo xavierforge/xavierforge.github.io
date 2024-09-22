@@ -10,6 +10,8 @@
   ## Themes: https://hexo.io/themes/
   theme: miccall
   ```
+- 🤖 Basic workflow: Edit ✍️ -> Commit ✅ -> Push to GitHub 🌎 (check [Deploy to GitHub Pages](https://hexo.io/zh-tw/docs/github-pages.html))
+
 ## Basic setup (`themes/miccall/_config.yml`)
 1. Favicon, background image & profile picture:
    
@@ -124,4 +126,3 @@
      CONTENT
 
      ```
-- Deploy to GitHub Pages: See [document](https://hexo.io/zh-tw/docs/github-pages.html).
