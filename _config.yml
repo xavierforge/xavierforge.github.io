@@ -4,16 +4,16 @@
 
 # Site
 title: ChihYing's Blog
-subtitle: ''
-description: ''
+subtitle: ""
+description: ""
 keywords:
 author: ChihYing Yen
 language: zh-TW
-timezone: 'Asia/Taipei'
+timezone: "Asia/Taipei"
 
 # URL
 ## Set your site url here. For example, if you use GitHub Page, set url as 'https://username.github.io/project'
-url: "https://eatpizza311.github.io/"
+url: "https://xavierforge.github.io/"
 root: /
 permalink: :year/:month/:day/:title/
 permalink_defaults:
@@ -38,7 +38,7 @@ titlecase: false # Transform title into titlecase
 external_link:
   enable: true # Open external links in new tab
   field: site # Apply to the whole site
-  exclude: ''
+  exclude: ""
 filename_case: 0
 render_drafts: false
 post_asset_folder: false
@@ -67,7 +67,7 @@ prismjs:
 # per_page: Posts displayed per page. (0 = disable pagination)
 # order_by: Posts order. (Order by date descending by default)
 index_generator:
-  path: ''
+  path: ""
   per_page: 10
   order_by: -date
 
@@ -87,7 +87,7 @@ meta_generator: true
 date_format: YYYY-MM-DD
 time_format: HH:mm:ss
 ## updated_option supports 'mtime', 'date', 'empty'
-updated_option: 'mtime'
+updated_option: "mtime"
 
 # Pagination
 ## Set per_page to 0 to disable pagination
@@ -109,6 +109,6 @@ theme: miccall
 ## Docs: https://hexo.io/docs/one-command-deployment
 deploy:
   type: git
-  repo: "https://github.com/eatPizza311/eatPizza311.github.io"
+  repo: "https://github.com/xavierforge/xavierforge.github.io"
   branch: gh-pages
   message:

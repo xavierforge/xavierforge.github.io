@@ -1,20 +1,25 @@
 # How to use?
+
 ![圖片](https://github.com/user-attachments/assets/9f86a376-3582-4d13-a441-bd94e458d338)
 
 ## Quick start
+
 - Follow the official guides for [installation](https://hexo.io/zh-tw/docs/index.html) & [basic configuration](https://hexo.io/zh-tw/docs/configuration.html).
 - Download the [miccall theme](https://github.com/miccall/hexo-theme-Mic_Theme) to `themes` directory -> Change the downloaded directory name to `miccall` -> Set it up in `_config.yml`:
+
   ```YAML
   # Extensions
   ## Plugins: https://hexo.io/plugins/
   ## Themes: https://hexo.io/themes/
   theme: miccall
   ```
+
 - 🤖 Basic workflow: Edit ✍️ -> Commit ✅ -> Push to GitHub 🌎 (check [Deploy to GitHub Pages](https://hexo.io/zh-tw/docs/github-pages.html))
 
 ## Basic setup (`themes/miccall/_config.yml`)
+
 1. Favicon, background image & profile picture:
-   
+
    Put them in `themes/miccall/source/img/` with the name of `logo_miccall`, `bg`, and `me`, respectively.
 
 2. Intro
@@ -32,13 +37,13 @@
      categories_name: Categories
      is_use_archives: false
      archives_name: Archives
-  
+
      # The social icons on the nav bar
      # for more icons, please see http://fontawesome.io/icons/#brand
      icon:
-       github: https://github.com/eatPizza311
+       github: https://github.com/xavierforge
        linkedin: https://www.linkedin.com/in/chih-ying-yen/
-  
+
      # Customized page
      # The value of link is the relative path to the directory in the source folder
      # Page:
@@ -59,7 +64,7 @@
    MainFirst:
      name: Yen Chih Ying   # title
      description: Lifelong # secondary title
-     pic_url: /img/me.jpg  # profile picture 
+     pic_url: /img/me.jpg  # profile picture
      goto_ulr: ""          # link to jump to
    ```
 
@@ -74,6 +79,7 @@
    ```
 
 ## Usage
+
 - `About` page
 
   1. Create an `about` directory in the `source` directory (This name corresponds to `like: "/about/"`).
@@ -91,7 +97,7 @@
      layout: gallery
      ---
      ```
-     
+
   3. Create `gallery.yml` in `source/_data`, and put the projects in the following format:
 
      ```YAML
@@ -107,6 +113,7 @@
        link: <Link to Github>
      ...
      ```
+
 - Articles
 
   1. The folder fo articles is `source/_post`.

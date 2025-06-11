@@ -23,7 +23,7 @@ Nav:
   #Social
   # for more icons, please see http://fontawesome.io/icons/#brand
   icon:
-    github: https://github.com/eatPizza311
+    github: https://github.com/xavierforge
     linkedin: https://www.linkedin.com/in/chih-ying-yen/
 
   pages:
@@ -46,8 +46,8 @@ Gallery:
 # Style Settings
 # ---------------------------------------------------------------
 
-# Custom code Render System 自定义代码渲染 
-# default dark funky okaidia twilight coy solarized  可选项  
+# Custom code Render System 自定义代码渲染
+# default dark funky okaidia twilight coy solarized  可选项
 # link to review : http://prismjs.com/index.html   官网预览
 prism: night_owl
 
@@ -59,7 +59,7 @@ fonts: FZLTCXHJW, "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB"
 #     duoshuo | disqus | disqus_click | changyan
 comment:
   use: disqus_click
-  shortname: eatpizza311
+  shortname: xavierforge
   duoshuo_thread_key_type: path
   duoshuo_embed_js_url: "https://static.duoshuo.com/embed.js"
   changyan_appid:
@@ -69,12 +69,12 @@ comment:
   valine:
     # Valine Comment System https://github.com/xCss/Valine
     on: true
-    appId: 'your appId'
-    appKey: 'your appkey'
+    appId: "your appId"
+    appKey: "your appkey"
     notify: true
     verify: false
     placeholder: Please leave your footprints
-    avatar: ''
+    avatar: ""
     avatar_cdn: https://gravatar.loli.net/avatar/ # avatar CDN address, default gravatar.loli.net
     pageSize: 10 # comments of one page
 
@@ -99,7 +99,7 @@ busuanzi:
   post_pv: true
   busuanzi_pure_mini_js: "busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"
 
-# Mathjax 支持库 
+# Mathjax 支持库
 mathjax:
   enable: true
   per_page: false
