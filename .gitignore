@@ -1,9 +1,18 @@
 .DS_Store
 Thumbs.db
-db.json
 *.log
+
+# build output
+dist/
+.astro/
+
+# dependencies
 node_modules/
-public/
-.deploy*/
-_multiconfig.yml
-package-lock.json
+
+# environment variables
+.env
+.env.production
+
+# editor
+.vscode/
+.idea/
