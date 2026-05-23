@@ -48,4 +48,23 @@ export const expressiveCodeOptions: AstroExpressiveCodeOptions = {
 	},
 	themes: ["dracula", "github-light"],
 	useThemedScrollbars: false,
+	shiki: {
+		langAlias: {
+			Bash: "bash",
+			Shell: "bash",
+			Sh: "bash",
+			Python: "python",
+			Py: "python",
+			JS: "javascript",
+			Js: "javascript",
+			TS: "typescript",
+			Ts: "typescript",
+			Rust: "rust",
+			Yaml: "yaml",
+			Json: "json",
+			Md: "markdown",
+			Markdown: "markdown",
+			Dockerfile: "docker",
+		},
+	},
 };

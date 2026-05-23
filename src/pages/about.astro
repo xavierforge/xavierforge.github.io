@@ -1,4 +1,5 @@
 ---
+import aboutPhoto from "@/assets/about.png";
 import PageLayout from "@/layouts/Base.astro";
 
 const meta = {
@@ -8,7 +9,14 @@ const meta = {
 ---
 
 <PageLayout meta={meta}>
-	<h1 class="title mb-12">About Me</h1>
+	<h1 class="title mb-8">About Me</h1>
+	<img
+		alt="ChihYing Yen"
+		class="border-special-light mb-8 h-40 w-40 rounded-full border object-cover object-[center_25%]"
+		height={aboutPhoto.height}
+		src={aboutPhoto.src}
+		width={aboutPhoto.width}
+	/>
 	<div class="prose prose-sm prose-cactus max-w-none">
 		<p>
 			I’m a data engineer who believes crafting the perfect data solution is

@@ -9,7 +9,7 @@
 
 set -euo pipefail
 
-VAULT_PUBLISHED="${VAULT_PUBLISHED:-$HOME/Obsidian/published}"
+VAULT_PUBLISHED="${VAULT_PUBLISHED:-$HOME/Library/Mobile Documents/iCloud~md~obsidian/Documents/my_obsidian/Published}"
 DEST="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/src/content/post"
 
 if [[ ! -d "$VAULT_PUBLISHED" ]]; then

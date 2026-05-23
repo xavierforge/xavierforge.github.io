@@ -19,7 +19,7 @@ const socialImageURL = new URL(ogImage ? ogImage : "/social-card.png", Astro.url
 <title>{siteTitle}</title>
 
 {/* Icons */}
-<link href="/icon.svg" rel="icon" type="image/svg+xml" />
+<link href="/logo.png" rel="icon" type="image/png" />
 {
 	import.meta.env.PROD && (
 		<>
@@ -71,7 +71,6 @@ const socialImageURL = new URL(ogImage ? ogImage : "/social-card.png", Astro.url
 
 {/* RSS auto-discovery */}
 <link href="/rss.xml" title="Blog" rel="alternate" type="application/rss+xml" />
-<link href="/notes/rss.xml" title="Notes" rel="alternate" type="application/rss+xml" />
 
 {/* Webmentions */}
 {

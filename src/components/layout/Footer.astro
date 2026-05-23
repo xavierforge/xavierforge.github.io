@@ -1,4 +1,6 @@
 ---
+import { Icon } from "astro-icon/components";
+import { socialLinks } from "@/data/social";
 import { menuLinks, siteConfig } from "@/site.config";
 
 const year = new Date().getFullYear();
@@ -7,9 +9,26 @@ const year = new Date().getFullYear();
 <footer
 	class="text-muted mt-auto flex w-full flex-col items-center justify-center gap-y-2 pt-20 pb-4 text-center align-top font-semibold sm:flex-row sm:justify-between sm:text-xs"
 >
-	<div class="me-0 sm:me-4">
-		&copy; {siteConfig.author}
-		{year}.<span class="inline-block">&nbsp;🚀&nbsp;{siteConfig.title}&nbsp;🌵&nbsp;</span>
+	<div class="flex flex-wrap items-center justify-center gap-x-2">
+		<span>&copy; {siteConfig.author} {year}.</span>
+		<span>🚀</span>
+		<ul class="flex items-center gap-x-2">
+			{
+				socialLinks.map(({ friendlyName, link, icon }) => (
+					<li class="flex">
+						<a
+							class="hover:text-link inline-block"
+							href={link}
+							rel="noreferrer"
+							target="_blank"
+						>
+							<Icon aria-hidden="true" class="h-4 w-4" focusable="false" name={icon} />
+							<span class="sr-only">{friendlyName}</span>
+						</a>
+					</li>
+				))
+			}
+		</ul>
 	</div>
 	<nav aria-labelledby="footer_links" class="sm:divide-muted flex gap-x-2 sm:gap-x-0 sm:divide-x">
 		<p id="footer_links" class="sr-only">More on this site</p>

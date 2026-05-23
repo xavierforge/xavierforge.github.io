@@ -20,8 +20,18 @@ export default {
 							borderLeftWidth: "0",
 						},
 						code: {
-							border: "1px dotted #666",
-							borderRadius: "2px",
+							backgroundColor: "var(--color-special-lighter, rgba(127, 127, 127, 0.12))",
+							borderRadius: "4px",
+							paddingInline: "0.35em",
+							paddingBlock: "0.1em",
+							fontWeight: "400",
+						},
+						"code::before": { content: "none" },
+						"code::after": { content: "none" },
+						/* don't double-style code already inside <pre> (expressive-code blocks) */
+						"pre code": {
+							backgroundColor: "transparent",
+							padding: "0",
 						},
 						kbd: {
 							"&:where([data-theme='dark'], [data-theme='dark'] *)": {
