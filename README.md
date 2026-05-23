@@ -1,6 +1,5 @@
 # ChihYing's Blog
-
-個人部落格，網址 https://xavierforge.github.io。用 Astro 6 + 客製化 [Astro Cactus](https://github.com/chrismwilliams/astro-theme-cactus) 主題，文章從 Obsidian vault 同步進 repo 後 commit & push 自動部署。
+用 Astro 6 + 客製化 [Astro Cactus](https://github.com/chrismwilliams/astro-theme-cactus) 主題，文章從 Obsidian vault 同步進 repo 後 commit & push 自動部署。
 
 架構細節寫在 [`CLAUDE.md`](./CLAUDE.md)，這份 README 只講「日常怎麼用」。
 
