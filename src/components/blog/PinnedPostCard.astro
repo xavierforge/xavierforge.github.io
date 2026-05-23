@@ -1,0 +1,49 @@
+---
+import { Image } from "astro:assets";
+import type { CollectionEntry } from "astro:content";
+import FormattedDate from "@/components/FormattedDate.astro";
+
+interface Props {
+	post: CollectionEntry<"post">;
+}
+
+const { post } = Astro.props;
+const { coverImage, description, publishDate, title } = post.data;
+---
+
+<a class="group block" href={`/posts/${post.id}/`}>
+	<article
+		class="border-special-light overflow-hidden rounded-lg border transition-colors group-hover:border-accent"
+	>
+		<div class="bg-special-lighter aspect-video">
+			{
+				coverImage ? (
+					<Image
+						alt={coverImage.alt}
+						class="h-full w-full object-cover"
+						height={240}
+						loading="eager"
+						src={coverImage.src}
+						width={420}
+					/>
+				) : (
+					<div class="text-muted flex h-full w-full items-center justify-center text-2xl">
+						{title.slice(0, 1)}
+					</div>
+				)
+			}
+		</div>
+		<div class="p-4">
+			<h3 class="title text-accent-2 mb-1 line-clamp-2 text-base font-semibold group-hover:underline">
+				{post.data.draft && <span class="text-red-500">(Draft) </span>}
+				{title}
+			</h3>
+			<FormattedDate class="text-muted text-xs" date={publishDate} />
+			{
+				description && (
+					<p class="text-muted mt-2 line-clamp-2 text-sm">{description}</p>
+				)
+			}
+		</div>
+	</article>
+</a>

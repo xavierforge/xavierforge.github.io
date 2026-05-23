@@ -4,33 +4,63 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-[Hexo](https://hexo.io) static blog published at `https://xavierforge.github.io/`. Content lives in `source/_posts/` (Markdown with front-matter); the site is rendered with the `miccall` theme under `themes/miccall/`.
+Personal blog at `https://xavierforge.github.io/`, built on Astro 6 with a forked copy of the [Astro Cactus](https://github.com/chrismwilliams/astro-theme-cactus) theme. Posts are written in Obsidian (`<vault>/published/*.md`) and synced into the repo before building. The pre-rebuild Hexo project is parked in `legacy/` for reference; nothing in `legacy/` is part of the live site.
 
 ## Commands
 
-- `npm install` — install Hexo and plugin dependencies (run once after clone).
-- `npm run server` — local dev server (hexo server), default `http://localhost:4000`. Use this to preview changes.
-- `npm run build` — generate the static site into `public/`.
-- `npm run clean` — wipe `public/` and `db.json`; run if rendered output looks stale.
-- `npm run deploy` — push `public/` via `hexo-deployer-git` to the `gh-pages` branch of the configured repo (see `deploy:` in `_config.yml`). Note: deployment normally happens automatically through CI — only run this manually if bypassing CI.
-- New post: `npx hexo new "Post Title"` creates `source/_posts/Post-Title.md` from `scaffolds/post.md`.
+- `npm install` — install dependencies. Rebuilds `sharp` via the `postinstall` hook.
+- `npm run dev` — local dev server (`astro dev`).
+- `npm run sync` — `rsync` the Obsidian vault's `published/` folder into `src/content/post/`. Edit `scripts/sync.sh` (or set `VAULT_PUBLISHED`) before first use.
+- `npm run build` — `astro build` → `dist/`, then `pagefind` indexes the site into `dist/pagefind/`.
+- `npm run preview` — preview the built site.
+- `npm run check` — `astro check` + `biome check`.
+- `npm run lint` — `biome check --write` (auto-fix).
 
 ## Deployment
 
-`.github/workflows/pages.yml` runs on every push to `main`: it installs deps, runs `npm run build`, and publishes `./public` to the `gh-pages` branch with `peaceiris/actions-gh-pages`. GitHub Pages serves the site from that branch. Editing content and pushing to `main` is the normal release path — there is no separate deploy step.
+`.github/workflows/pages.yml` runs on every push to `main` and on manual dispatch:
+
+1. `build` job: `npm ci` → `npm run build` → uploads `./dist` as a Pages artifact.
+2. `deploy` job: `actions/deploy-pages@v4` publishes the artifact to GitHub Pages.
+
+One-time setup: GitHub repo → Settings → Pages → Source must be set to "GitHub Actions" (not the deprecated `gh-pages` branch flow). No CNAME — the site lives at the default `xavierforge.github.io` URL.
 
 ## Architecture notes
 
-Two config layers, both matter:
+### Content layer
 
-- `_config.yml` (site root) — Hexo-level config: site metadata, permalink scheme (`:year/:month/:day/:title/`), `theme: miccall`, `prismjs` highlighting (the built-in `highlight` is disabled in favor of Prism), and the `deploy:` target (used by `hexo deploy`, but CI bypasses this and pushes directly).
-- `themes/miccall/_config.yml` — theme-level config: nav, intro/profile copy, Prism color scheme (`prism: night_owl`), comment system (`disqus_click`, shortname `xavierforge`), search, MathJax, and visitor counters (`busuanzi`).
+Three first-party collections, all defined in `src/content.config.ts` via the `glob` loader on the v5 Content Layer API:
 
-The `miccall` theme is vendored in-tree (not an npm dep). Layouts in `themes/miccall/layout/` (`index.ejs`, `post.ejs`, `layout.ejs`, plus `_partial/` and `_widget/`) are EJS; styles are under `themes/miccall/source/css/`. Edit these directly to change look-and-feel — there is no upstream sync.
+- `post` — blog posts under `src/content/post/`. Schema requires `title`, `description`, `publishDate`; supports `coverImage: { src, alt }` (relative path) for the hero image at the top of the post and the homepage Pinned Posts cards. Other fields: `tags`, `draft`, `pinned`, `updatedDate`, `ogImage`. Posts are normally synced from Obsidian — don't hand-edit them in the repo, edit in Obsidian and re-run `npm run sync`.
+- `project` — portfolio entries under `src/content/project/`, one `.md` per project. Schema: `title`, `description`, `link` (URL), optional `coverImage`, `order`. Rendered by `src/pages/portfolio.astro`.
+- `tag` — optional per-tag metadata files under `src/content/tag/` (currently empty); used by Cactus's tag detail pages. Add a `<tagname>.md` here if you want a description for a tag page.
 
-Special source directories beyond `_posts/`:
+Cactus's `notes` collection / routes were removed in the rebuild; if you want a digital-garden-style note stream later, restore from `legacy/` history or re-pull from upstream Cactus.
 
-- `source/about/index.md`, `source/portfolio/index.md` — custom pages referenced from the theme's `Nav.pages` config. The portfolio page uses `layout: gallery` (front-matter) and pulls project entries from `source/_data/gallery.yml`.
-- `source/_data/` — Hexo data files exposed to templates as `site.data.*`.
+### Obsidian → site bridge
 
-Post front-matter convention (see `README.md` and `scaffolds/post.md`): `title`, `date`, `tags`, `categories`, `thumbnail`. The `thumbnail` URL is used by the theme's index card view.
+The Obsidian-specific authoring surface is bridged through two custom remark plugins (registered in `astro.config.ts`):
+
+- `src/plugins/remark-obsidian-images.ts` — rewrites bare relative image paths (`assets/Hello/foo.png`) to Astro-friendly (`./assets/Hello/foo.png`) so the asset pipeline picks them up, and treats numeric alt text (`![400](...)`) as a pixel `width` attribute on the rendered `<img>`. External URLs are passed through untouched.
+- `remark-obsidian-callout` (npm) — renders Obsidian's `> [!note]` / `> [!warning]` / etc. callout syntax. Coexists with Cactus's existing `:::note` directive admonitions (`src/plugins/remark-admonitions.ts`).
+
+Image path convention from Obsidian: `published/<title>.md` + `published/assets/<title>/<file>.png`. Sync mirrors the whole `published/` tree to `src/content/post/`, so relative `assets/<title>/<file>.png` paths just work.
+
+### Layout split
+
+- `src/layouts/Base.astro` — shell (head, header, footer, theme provider).
+- `src/layouts/BlogPost.astro` — wraps a post with `Masthead` (renders `coverImage` Notion-style on top), TOC, prose body, back-to-top button.
+- `src/pages/index.astro` — homepage. Pinned Posts render with `PinnedPostCard` (thumbnail card grid); the chronological list uses `PostPreview` (text-only row).
+- `src/pages/portfolio.astro` — projects collection, card grid.
+- `src/pages/about.astro` — static About content.
+- `src/site.config.ts` — site title, author, description, URL, date locale, and `menuLinks` for the nav.
+
+### Styling
+
+Tailwind v4 via `@tailwindcss/vite`. Theme tokens (colors, spacing) come from Cactus's CSS in `src/styles/`. `vite` is pinned to `7.3.3` in `package.json` `overrides` because `@tailwindcss/vite` 4.3.0 chokes on the resolver shape in newer vite/rolldown releases — bump both together when upgrading.
+
+## Things to avoid
+
+- Don't edit posts under `src/content/post/` directly — they get clobbered by the next `npm run sync`. Source of truth is the Obsidian vault.
+- Don't put anything important in `legacy/` — it exists only as a historical reference of the old Hexo blog and will eventually be deleted.
+- Don't reintroduce a `gh-pages` branch deploy — the Pages source is set to GitHub Actions.
