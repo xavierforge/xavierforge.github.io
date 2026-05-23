@@ -1,0 +1,43 @@
+---
+import aboutPhoto from "@/assets/about.png";
+import PageLayout from "@/layouts/Base.astro";
+
+const meta = {
+	description: "About ChihYing Yen — data engineer, MLOps advocate, lifelong learner.",
+	title: "About",
+};
+---
+
+<PageLayout meta={meta}>
+	<h1 class="title mb-8">About Me</h1>
+	<img
+		alt="ChihYing Yen"
+		class="border-special-light mb-8 h-40 w-40 rounded-full border object-cover object-[center_25%]"
+		height={aboutPhoto.height}
+		src={aboutPhoto.src}
+		width={aboutPhoto.width}
+	/>
+	<div class="prose prose-sm prose-cactus max-w-none">
+		<p>
+			I’m a data engineer who believes crafting the perfect data solution is
+			like making the ultimate pizza — precision, timing, and the right blend
+			of ingredients are key.
+		</p>
+		<p>
+			With over 4 years of experience in materials and telecom, I’ve been the
+			chef behind machine learning solutions that range from discovering new
+			materials (Bayesian Optimization is my secret sauce) to spotting
+			production-line issues with YOLO before they can mess up the recipe.
+		</p>
+		<p>
+			My MLOps and data pipelines serve up insights with the consistency of a
+			pizza delivery on a Friday night, ensuring stakeholders get exactly what
+			they need.
+		</p>
+		<p>
+			I’m driven by a passion for lifelong learning — always hungry to add new
+			skills and ideas to my toolkit and find fresh approaches to any problem
+			on the table.
+		</p>
+	</div>
+</PageLayout>
