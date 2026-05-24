@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-Personal blog at `https://xavierforge.github.io/`, built on Astro 6 with a forked copy of the [Astro Cactus](https://github.com/chrismwilliams/astro-theme-cactus) theme. Posts are written in Obsidian (`<vault>/published/*.md`) and synced into the repo before building. The pre-rebuild Hexo project is parked in `legacy/` for reference; nothing in `legacy/` is part of the live site.
+Personal blog at `https://xavierforge.dev/`, built on Astro 6 with a forked copy of the [Astro Cactus](https://github.com/chrismwilliams/astro-theme-cactus) theme. Posts are written in Obsidian (`<vault>/published/*.md`) and synced into the repo before building. The pre-rebuild Hexo project is parked in `legacy/` for reference; nothing in `legacy/` is part of the live site.
 
 ## Commands
 
@@ -23,7 +23,7 @@ Personal blog at `https://xavierforge.github.io/`, built on Astro 6 with a forke
 1. `build` job: `npm ci` → `npm run build` → uploads `./dist` as a Pages artifact.
 2. `deploy` job: `actions/deploy-pages@v4` publishes the artifact to GitHub Pages.
 
-One-time setup: GitHub repo → Settings → Pages → Source must be set to "GitHub Actions" (not the deprecated `gh-pages` branch flow). No CNAME — the site lives at the default `xavierforge.github.io` URL.
+One-time setup: GitHub repo → Settings → Pages → Source must be set to "GitHub Actions" (not the deprecated `gh-pages` branch flow). The site is served from the custom domain `xavierforge.dev` (apex): `public/CNAME` pins the domain on every build, apex `A`/`AAAA` records point at GitHub Pages' IPs, and `www` CNAMEs to `xavierforge.github.io`. Keep `siteConfig.url` (which feeds Astro's `site`) in sync with the domain.
 
 ## Architecture notes
 

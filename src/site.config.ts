@@ -2,7 +2,7 @@ import type { AstroExpressiveCodeOptions } from "astro-expressive-code";
 import type { SiteConfig } from "@/types";
 
 export const siteConfig: SiteConfig = {
-	url: "https://xavierforge.github.io/",
+	url: "https://xavierforge.dev/",
 	title: "Xavier's Data Forge",
 	author: "ChihYing Yen",
 	description: "Lifelong learner and MLOps advocate.",
