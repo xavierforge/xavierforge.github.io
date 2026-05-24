@@ -3,7 +3,7 @@ import type { SiteConfig } from "@/types";
 
 export const siteConfig: SiteConfig = {
 	url: "https://xavierforge.github.io/",
-	title: "ChihYing's Blog",
+	title: "Xavier's Data Forge",
 	author: "ChihYing Yen",
 	description: "Lifelong learner and MLOps advocate.",
 	lang: "en",

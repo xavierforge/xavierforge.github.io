@@ -7,9 +7,9 @@ export interface SocialLink {
 
 export const socialLinks: SocialLink[] = [
 	{
-		friendlyName: "Email",
-		link: "mailto:spacetime0311@gmail.com",
-		icon: "mdi:email-outline",
+		friendlyName: "Github",
+		link: "https://github.com/xavierforge",
+		icon: "simple-icons:github",
 	},
 	{
 		friendlyName: "Threads",
@@ -17,13 +17,13 @@ export const socialLinks: SocialLink[] = [
 		icon: "simple-icons:threads",
 	},
 	{
-		friendlyName: "Github",
-		link: "https://github.com/xavierforge",
-		icon: "simple-icons:github",
-	},
-	{
 		friendlyName: "LinkedIn",
 		link: "https://www.linkedin.com/in/chih-ying-yen/",
 		icon: "simple-icons:linkedin",
+	},
+	{
+		friendlyName: "Email",
+		link: "mailto:spacetime0311@gmail.com",
+		icon: "mdi:email-outline",
 	},
 ];
