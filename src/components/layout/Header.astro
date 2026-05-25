@@ -235,6 +235,21 @@ import { siteConfig } from "../../site.config";
 		animation: forge-flicker 2.8s ease-in-out infinite;
 	}
 
+	/* touch devices can't hover → run the full forge effect by default:
+	   rusted iron + firelight flicker + flying sparks */
+	@media (hover: none) {
+		.anvil {
+			--f-top: #c9803f;
+			--f-left: #9c5a2d;
+			--f-right: #713d1d;
+			--f-accent: #844a24;
+			animation: forge-flicker 2.8s ease-in-out infinite;
+		}
+		.logo-sparks .spark {
+			animation: spark-fly 0.7s ease-out infinite;
+		}
+	}
+
 	/* hot-metal firelight shimmer while hovered */
 	@keyframes forge-flicker {
 		0% {
@@ -296,7 +311,9 @@ import { siteConfig } from "../../site.config";
 		.logo-link:hover .anvil,
 		.logo-link:focus-visible .anvil,
 		.logo-link:hover .logo-sparks .spark,
-		.logo-link:focus-visible .logo-sparks .spark {
+		.logo-link:focus-visible .logo-sparks .spark,
+		.anvil,
+		.logo-sparks .spark {
 			animation: none;
 		}
 	}
