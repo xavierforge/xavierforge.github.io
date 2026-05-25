@@ -3,8 +3,8 @@ title: 讓老舊開發板重獲新生：在 Jetson Nano (Ubuntu 18.04) 部署 Op
 description: 在 Jetson Nano 部署 OpenClaw
 publishDate: 22 Feb 2026
 tags:
-  - jetson nano
   - openclaw
+  - jetson nano
 pinned: true
 draft: false
 coverImage:
