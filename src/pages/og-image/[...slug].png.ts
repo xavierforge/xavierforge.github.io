@@ -6,6 +6,7 @@ import RobotoMono from "@/assets/roboto-mono-regular.ttf";
 import { getAllPosts } from "@/data/post";
 import { getFormattedDate } from "@/utils/date";
 import { readCache, writeToCache } from "./_cacheUtil";
+import { loadCJKFonts } from "./_loadGoogleFont";
 import { ogMarkup } from "./_ogMarkup";
 
 const ogOptions: SatoriOptions = {
@@ -41,7 +42,12 @@ export async function GET(context: APIContext) {
 			month: "long",
 			weekday: "long",
 		});
-		const svg = await satori(ogMarkup(title, postDate), ogOptions);
+		// Only the (bold) title can contain CJK; load a matching glyph subset.
+		const cjkFonts = await loadCJKFonts(title, 700);
+		const svg = await satori(ogMarkup(title, postDate), {
+			...ogOptions,
+			fonts: [...ogOptions.fonts, ...cjkFonts],
+		});
 		pngBuffer = await sharp(Buffer.from(svg)).png().toBuffer();
 		writeToCache(title, pubDate, pngBuffer);
 	}

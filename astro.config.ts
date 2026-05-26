@@ -36,7 +36,7 @@ export default defineConfig({
 		webmanifest({
 			// See: https://github.com/alextim/astro-lib/blob/main/packages/astro-webmanifest/README.md
 			name: siteConfig.title,
-			short_name: "Astro_Cactus", // optional
+			short_name: "Xavier Forge", // optional
 			description: siteConfig.description,
 			lang: siteConfig.lang,
 			icon: "public/logo.png", // the source for generating favicon & icons
@@ -59,7 +59,7 @@ export default defineConfig({
 			],
 			start_url: "/",
 			background_color: "#1d1f21",
-			theme_color: "#2bbc8a",
+			theme_color: "#c9803f",
 			display: "standalone",
 			config: {
 				insertFaviconLinks: false,
