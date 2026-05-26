@@ -5,7 +5,8 @@ export const siteConfig: SiteConfig = {
 	url: "https://xavierforge.dev/",
 	title: "Xavier's Data Forge",
 	author: "ChihYing Yen",
-	description: "Lifelong learner and MLOps advocate.",
+	description:
+		"Rust author and lifelong learner, building and writing at the intersection of systems and ML.",
 	lang: "en",
 	ogLocale: "en",
 	date: {
