@@ -7,6 +7,9 @@ import WebMentions from "@/components/blog/webmentions/index.astro";
 
 import BaseLayout from "./Base.astro";
 
+// KaTeX styles for math rendered by remark-math + rehype-katex
+import "katex/dist/katex.min.css";
+
 interface Props {
 	post: CollectionEntry<"post">;
 }
