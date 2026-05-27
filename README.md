@@ -57,7 +57,7 @@ git commit -m "post: <文章標題>"
 git push
 ```
 
-GitHub Actions 大約 1-2 分鐘跑完，自動部署到 https://xavierforge.github.io/。
+GitHub Actions 大約 1-2 分鐘跑完，自動部署到 https://xavierforge.dev/。
 
 ## Markdown 寫作小抄
 
@@ -132,4 +132,4 @@ npm run check     # astro check + biome check
 
 - GitHub repo → Settings → Pages → Source 已設成 **GitHub Actions**
 - Workflow 在 `.github/workflows/pages.yml`，每次 push 到 `main` 觸發
-- 沒有自訂網域，站台網址固定是 `xavierforge.github.io`
+- 自訂網域 `xavierforge.dev`（apex）：`public/CNAME` 每次 build 釘住網域，apex `A`/`AAAA` 指向 GitHub Pages，`www` 則 CNAME 到 `xavierforge.github.io`
