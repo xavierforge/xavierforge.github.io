@@ -1,10 +1,10 @@
 ---
 title: "讓老舊開發板重獲新生：在 Jetson Nano 部署 OpenClaw AI Gateway"
 description: "把退役的 Jetson Nano (Ubuntu 18.04) 打造成安全隔離的本地 AI Agent 沙盒：啟用 ESM 續命、用 Bun 繞過 glibc 限制，一步步部署 OpenClaw AI Gateway 並設定 systemd 常駐服務。"
-publishDate: "2026-02-22"
-updatedDate: "2026-03-06"
+publishDate: 2026-02-22
+updatedDate: 2026-03-06
 coverImage:
-  src: ./assets/OpenClaw on Jetson/cover.png
+  src: ./assets/jetson-nano-openclaw/cover.png
   alt: "AI 生成的 Jetson Nano 部署 OpenClaw 縮圖"
 tags: [Jetson Nano, OpenClaw, AI Agent, Bun, Ubuntu]
 pinned: true
@@ -19,7 +19,7 @@ draft: false
 而且坦白說，看了那麼多 Agent 因為權限過大而引發的安全性災情，即使大概知道怎麼做防護，我還是不敢把平常有在工作的主力硬體馬上交給這類 AI Agent。  
 
 所以乾脆就趁著年假，試試看能不能把這台老公公打造成一個安全且隔離的環境，當作我的小小龍蝦缸，在裡面把 [Clawdbot-Moltbot-OpenClaw](https://github.com/openclaw/openclaw) 養起來吧～
-# 系統規格
+## 系統規格
 | 項目      | 規格                                         |
 | ------- | ------------------------------------------ |
 | 開發板     | NVIDIA Jetson Nano (4GB)                   |
@@ -36,7 +36,7 @@ draft: false
 這部分可以直接參考官方的 [Get Started With Jetson Nano Developer Kit](https://developer.nvidia.com/embedded/learn/get-started-jetson-nano-devkit#intro)，有相當完整的說明，這裡就不贅述了。
 
 連線的部分，我插了一支 USB Wi-Fi 網卡，主要透過區域網路 (Local network) SSH 進去操作，但偶而也會接上 HDMI 看看瀏覽器是否有正確被開啟等實際運作情況。
-# Jetson Nano 的先天限制與破局之法
+## Jetson Nano 的先天限制與破局之法
 前面提到，這個版本的 Jetson Nano 已經被澈底放生，官方支援停留在 JetPack 4.6.1，這意味著作業系統被永遠鎖死在 Ubuntu 18.04。
 這個限制帶來了致命的連鎖反應：Ubuntu 18.04 內建的 C 標準函式庫 (`glibc`) 版本過舊。
 
@@ -44,11 +44,11 @@ draft: false
 
 如果直接照著官方文件安裝 Node.js，只會得到冷酷的 `Kernel too old` 錯誤。
 既然硬體與底層 OS 無法改變，我們就必須從執行環境與系統安全性著手，一步步打造這座堅固的龍蝦缸。
-## 第一步：清理水質與加固蝦缸 (系統限制與安全防護)
+### 第一步：清理水質與加固蝦缸 (系統限制與安全防護)
 讓一個擁有 Shell 執行權限的 Agent 在舊系統上在裸奔實在太過刺激。
 
 所以在開始養龍蝦之前，必須先建立好防線並榨出極限效能。
-### 1. 啟用 ESM 獲取安全性更新
+#### 1. 啟用 ESM 獲取安全性更新
 Ubuntu 18.04 雖然在 2023 年就停止常規支援，但我們可以透過免費的延伸安全性維護 (ESM) 續命到 2028 年。
 
 請至 ubuntu.com/pro 獲取免費的 Token (有五台免費的額度)，並在終端機執行：
@@ -57,7 +57,7 @@ sudo pro attach YOUR_FREE_TOKEN
 sudo apt update && sudo apt upgrade -y
 ```
 這裡筆者實測刷完機啟用 ESM 後，直接補上了三百多個潛在的安全性漏洞。
-### 2. 建立 Swap 與關閉無用服務 (榨取記憶體)
+#### 2. 建立 Swap 與關閉無用服務 (榨取記憶體)
 這台機器只有可憐的 4GB RAM，為了防止 OpenClaw 記憶體耗盡當機，必須強制劃分 4GB 的硬碟空間作為虛擬記憶體：
 ```Bash
 sudo fallocate -l 4G /var/swapfile
@@ -72,9 +72,9 @@ sudo systemctl stop rpcbind.socket rpcbind.service
 sudo systemctl disable rpcbind.socket rpcbind.service
 sudo systemctl mask rpcbind.socket rpcbind.service
 ```
-### 3. 防火牆與 SSH 金鑰鎖定
+#### 3. 防火牆與 SSH 金鑰鎖定
 為了確保這缸水只有我們能碰。
-#### 第一階段：在操作主機 (例如筆電) 上產生並傳送金鑰
+##### 第一階段：在操作主機 (例如筆電) 上產生並傳送金鑰
 打開平時操作用電腦的終端機，產生一把安全性較高的 `ed25519` 金鑰 (過程詢問設定時，一路按 Enter 預設到底即可)：
 ```bash
 ssh-keygen -t ed25519 -C "nano-key"
@@ -84,7 +84,7 @@ ssh-keygen -t ed25519 -C "nano-key"
 ssh-copy-id YOUR_USER@<Nano的IP位址>
 ```
 系統會要求我們最後一次輸入 Nano 的登入密碼，輸入完成後，公鑰就會自動寫入 Nano 的授權名單中。
-#### 第二階段：關閉密碼驗證與啟動防火牆 (在 Nano 端操作)
+##### 第二階段：關閉密碼驗證與啟動防火牆 (在 Nano 端操作)
 請立刻在操作主機上測試 `ssh YOUR_USER@<Nano的IP位址>`，確認現在不需要輸入密碼就能直接登入。確認無誤後，我們就可以放心地把密碼登入的後門鎖上了。
 在 Nano 的終端機輸入：
 ```bash
@@ -105,7 +105,7 @@ sudo ufw default deny incoming
 sudo ufw default allow outgoing
 sudo ufw enable
 ```
-## 第二步：解決老系統的消化不良，吃我特製包子 (Bun) 啦！
+### 第二步：解決老系統的消化不良，吃我特製包子 (Bun) 啦！
 延續龍蝦缸的比喻，OpenClaw 這隻現代化的 AI 龍蝦，原本的主食是 Node.js 22+。
 
 但 Ubuntu 18.04 這缸老水裡面的基礎生態 (C 標準函式庫 `glibc`) 實在太過古老，如果硬塞新版的 Node.js 給它，系統就會嚴重消化不良，直接吐出無情的 `Kernel too old` 報錯。
@@ -125,7 +125,7 @@ source ~/.bashrc
 
 既然是趁著年假搞的「廢物利用」極限沙盒實驗，這點潛在的腸胃副作用，也是我們為了讓這隻 AI 龍蝦活下去，所必須接受的妥協啦！
 BTW，筆者本人在除夕的時候真的因為急性腸胃炎去急診室吊了一桶 🤦，所以這裡才硬塞了一個消化不良的比喻。
-## 第三步：放蝦囉與 Shebang 修正
+### 第三步：放蝦囉與 Shebang 修正
 有了 Bun 這款特製包子，我們終於可以安心地把 OpenClaw 抓進缸裡：
 ```Bash
 bun install -g openclaw@latest
@@ -144,7 +144,7 @@ bun install -g openclaw@latest
 ```Bash
 sed -i '1s|#!/usr/bin/env node|#!/usr/bin/env bun|' ~/.bun/install/global/node_modules/openclaw/openclaw.mjs
 ```
-## 第四步：讓牠乖乖待在缸底 (Daemon 背景服務的坑)
+### 第四步：讓牠乖乖待在缸底 (Daemon 背景服務的坑)
 至此，OpenClaw 總算是順利入缸了！
 
 但剛才修改 shebang 的動作，僅僅是讓 `openclaw` 這個指令本身可以順利運作，不再因為找不到 Node 而跳出報錯。
@@ -188,8 +188,8 @@ openclaw security audit --deep
 openclaw security audit --fix
 ```
 這裡就讓我的小龍蝦跟大家拜個晚年吧：
-![祝大家馬上舞吉、馬西搜呦](assets/OpenClaw%20on%20Jetson/file-20260523230132215.gif)
-# 結語
+![祝大家馬上舞吉、馬西搜呦](assets/jetson-nano-openclaw/file-20260527152859738.gif)
+## 結語
 回過頭來看，我們這幾步其實都在想辦法規避老舊系統帶來的麻煩。
 Jetson Nano 的宿命被官方釘死在 JetPack 4.6.x，這不單單是作業系統停留在 Ubuntu 18.04 的問題，而是它的 Kernel、GPU 驅動和 CUDA 生態全都和底層的 L4T (Linux for Tegra) 深度綁定。
 我們不能隨便下指令升級系統，縱使使用第三方魔改的 OS 又可能會失去最寶貴的 GPU 加速支援，這樣就沒必要堅持使用 Jetson 了。

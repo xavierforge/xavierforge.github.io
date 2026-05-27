@@ -3,7 +3,7 @@ title: 2021 鐵人賽佳作｜然後模型就死在 Jupyter Notebook 了 (ಥ﹏
 description: 2021 iThome 鐵人賽佳作作品。從機器學習產品的生命週期出發，盤點一個 ML 產品從概念到落地會經過的部署、建模、資料、計畫各階段，並實作一個簡單的 Web App。
 publishDate: 2021-10-15
 coverImage:
-  src: ./assets/Ironman 2021/cover.png
+  src: ./assets/ironman-2021/cover.png
   alt: 佳作版封面
 tags:
   - 鐵人賽
@@ -21,7 +21,7 @@ draft: false
 轉眼間就過了 30 天啦，第一次參賽有夠菜沒想到還能迎來這一天。
 要堅持每天發文真的很考驗意志力 (也大大考驗了我的 PPT 作圖技術哈哈哈)，期間還經歷了兩次連假，差點就放飛自我了。
 關於這次挑戰，一開始的動機是因為在機器學習這個領域摸爬滾打也大概兩年的時間，從入門到稍有概念剛好搭上了大家都在談論 AI 落地的風潮，所以想趁此機會盤點一下一個機器學習產品從概念到實際產出會經過哪些步驟以及需要考慮什麼事，最後再利用這些概念實作一個簡單的 Web App：
-![Web App demo|600](assets/Ironman%202021/file-20260525145337256.gif)
+![Web App demo|600](assets/ironman-2021/file-20260527152912344.gif)
 可以看得出來這個 App 離完美還有好大一段距離，但至少可以做個敲門磚，朝著規模較大的應用前進。
 
 這次挑戰的文章基本上算是 Coursera 專項課程 [Machine Learning Engineering for Production (MLOps) Specialization](https://www.coursera.org/specializations/machine-learning-engineering-for-production-mlops) 第一部分 Introduction to Machine Learning in Production 的心得筆記。
@@ -35,7 +35,7 @@ draft: false
 最後，感謝訂閱我的三個孩子，真的沒想到有人願意賞臉訂閱哈哈哈
 ## 文章索引
 本系列的文章都圍繞下面這張「機器學習產品生命週期」，這裡就按照發文順序整理起來：
-![機器學習產品生命週期示意圖|600](assets/Ironman%202021/file-20260525145456995.png)
+![機器學習產品生命週期示意圖|600](assets/ironman-2021/file-20260527152912417.png)
 ＊圖片修改自 [Introduction to Machine Learning in Production](https://www.coursera.org/learn/introduction-to-machine-learning-in-production/home/welcome)
 ### 1. 概覽
 - [[Day 01] 前言 — 是誰殺了模型?](https://ithelp.ithome.com.tw/articles/10265358)
@@ -51,7 +51,7 @@ draft: false
 - [[Day 09] 建立機器學習模型 — Andrew Ng 大神說要這樣做](https://ithelp.ithome.com.tw/articles/10270985)
 - [[Day 10] 模型達到商業指標的挑戰 — Test set performance 的殞落](https://ithelp.ithome.com.tw/articles/10271734)
 - [[Day 11] 建立 Baseline — 開啟機器學習專案的第一步](https://ithelp.ithome.com.tw/articles/10272420)
-![建立 baseline 重要性的比喻](assets/Ironman%202021/file-20260525145749582.png)
+![建立 baseline 重要性的比喻](assets/ironman-2021/file-20260527152912331.png)
 > 幕後花絮：真的很想把這個比喻用圖表達清楚，但苦於沒有作圖能力，所以花了超多時間才找到這張背景圖，差點就在這裡翻船哈哈哈
 - [[Day 12] Error analysis — 錯誤中學會成長 (咩噗)](https://ithelp.ithome.com.tw/articles/10273175)
 - [[Day 13] 資料增強 — 我全都要.jpg](https://ithelp.ithome.com.tw/articles/10273884)

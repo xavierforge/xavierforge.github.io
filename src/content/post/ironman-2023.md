@@ -3,7 +3,7 @@ title: 2023 鐵人賽完賽｜Rust 加 MLOps，你說有沒有搞頭？
 description: 2023 iThome 鐵人賽完賽心得與 30 天文章總索引：從一個 Python 使用者的視角，探索 Rust 在 MLOps 中有沒有搞頭，本系列後來延伸成書《從 Pythonista 到 Rustacean》。
 publishDate: 2023-10-15
 coverImage:
-  src: ./assets/Ironman 2023/cover-ferris-finish.png
+  src: ./assets/ironman-2023/cover.png
   alt: 完賽衝線圖，中間 C 位是 Ferris
 tags:
   - 鐵人賽
@@ -17,7 +17,7 @@ draft: false
 這次的鐵人賽系列，後來經過大量增修、擴寫成了我的第一本書 **《從 Pythonista 到 Rustacean：資料從業者的第一本 Rust 指南》**（深智數位出版）。
 
 如果各位讀者想要更完整、更新、更系統化的版本，歡迎支持：
-[![從 Pythonista 到 Rustacean 書封](assets/Ironman%202023/file-20260525141742071.jpg)](https://www.books.com.tw/products/0011044858)
+[![從 Pythonista 到 Rustacean 書封](assets/ironman-2023/file-20260527152916119.jpg)](https://www.books.com.tw/products/0011044858)
 - 📕 [博客來](https://www.books.com.tw/products/0011044858)
 - 📗 [天瓏網路書店](https://www.tenlong.com.tw/products/9786267757789)
 > 書中相較於本系列，補上了 PyO3 擴充套件實戰、Candle 與 Burn 框架的 AI 落地應用，以及更完整的工程化實踐。
@@ -27,21 +27,21 @@ draft: false
 今天最後一天啦，恭喜自己完賽，這 30 天就跟用 Stable diffusion 畫圖一樣，有時候很崩潰，有時候很順遂 (單押)，但無論如何，我們都在嘗試中成長了，附上大量衝線圖，中間 C 位是 [Ferris boy](https://www.youtube.com/watch?v=dQw4w9WgXcQ)（如上方封面）。
 ## 完賽心得
 存活下來啦～ 不得不說，裸跑真的是滿精實的，先寫在這裡提醒自己下次記得囤點文章，不然...
-![裸跑心得|300](assets/Ironman%202023/file-20260525142157510.png)
+![裸跑心得|300](assets/ironman-2023/file-20260527152916125.png)
 ＊提醒未來的自己這是時事梗，[「你就像茶碗蒸」 壽司店對到眼 引爆衝突](https://www.youtube.com/watch?v=xr8PzQ7qntk&t=5s)
 
 這次挑戰依然拖到了跨越兩個連假 (雖然我是第五個報名的哈哈哈)，還遇到了貓貓需要看醫生 (目前已經是健康寶寶了，感謝天，感謝地，[感謝命運讓我們相遇](https://www.youtube.com/watch?v=Mh5r3aD2iwg&t=23s))，真的很難把文章完善到自己完全滿意的程度，尤其是專案的部分，實在沒辦法花太多時間去 Debug 與優化，只能先想辦法讓現有的程式運作起來就好，這大概是這次挑戰最遺憾的地方：
-![專案遺憾|300](assets/Ironman%202023/file-20260525142341219.png)
+![專案遺憾|300](assets/ironman-2023/file-20260527152916116.png)
 
 我想很多挑戰者都能有感觸的一點就是，文章沒有完成的盡頭，但鐵人賽 12 點前要交 (那個最下面的系統標準時間 UTC+0800 會變成紅色的，嚇死人)，無論如何，作品在讀者看到的時候就完成了，所以很感謝願意收看的孩子們，尤其感謝放心點開位置很奇怪的超連結然後不意外地發現奇怪的東西也可以會心一笑的孩子，而且沒想到這次比上次多了五個人訂閱，真是萬分感謝讓我為您右上角的小鈴鐺貢獻！
 
 最後，這次挑戰的目標在於從一個 Python 使用者的角度來探索 Rust 加 MLOps 有沒有搞頭，以下是我個人的結論 (歡迎在下方留言區討論！)：
 
 > 我認為 Rust 絕對是未來的一部分，它為我們帶來了更好的表現與更簡潔的解決方案。 但這對社群來說是加分，而非取代，就像 Scala 與 R 都還在、小象 Hadoop 會陪伴我們到老一樣。 在可預見的未來 Python 依然會穩居 ML 之王的寶座，但 Rust 絕對是工具包裡一把強而有力的瑞士刀。 總的來說，Rust 加 MLOps 的確有搞頭，它在我們需要效能時，是非常完美的！
-> ![結論配圖|300](assets/Ironman%202023/file-20260525142523632.jpg)
+> ![結論配圖|300](assets/ironman-2023/file-20260527152916110.jpg)
 ## 文章索引
 在過去的 30 天中，我們首先將 Rust 引入日常的工作流程、完成 LLM chatbot 專案，到談論從資料、模型、產品的角度可以如何應用 Rust，真是一段驚險刺激的旅程！
-![旅程回顧|400](assets/Ironman%202023/file-20260525142701570.jpg)
+![旅程回顧|400](assets/ironman-2023/file-20260527152916104.jpg)
 以下是按照順序各個主題的發文整理，請大家笑納：
 ### 1. From Python to Rust
 > 以所有軟體專案都會經歷的工作流程來說明如何優雅地從 Python 轉換到 Rust 基本上就是說服大家為什麼要學 Rust 🤣
@@ -55,7 +55,7 @@ draft: false
 - [[Day 09] 從 Python 🐍 到 Rust 🦀｜MLOps 最終比較 ⚔️ 與環境永續 🍀](https://ithelp.ithome.com.tw/articles/10326453)
 ### 2. Project!
 > 完成一個利用 Huggingface LLM 模型的 chatbot 專案
-> ![Demo|700](assets/Ironman%202023/file-20260525142831951.gif)
+> ![Demo|700](assets/ironman-2023/file-20260527152916097.gif)
 - [[Day 10] 鋼鐵草泥馬 🦙 LLM chatbot 🤖 (1/10)｜專案簡介](https://ithelp.ithome.com.tw/articles/10327495)
 - [[Day 11] 鋼鐵草泥馬 🦙 LLM chatbot 🤖 (2/10)｜行前準備](https://ithelp.ithome.com.tw/articles/10328736)
 - [[Day 12] 鋼鐵草泥馬 🦙 LLM chatbot 🤖 (3/10)｜Leptos 小教室](https://ithelp.ithome.com.tw/articles/10329279)
