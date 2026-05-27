@@ -12,6 +12,7 @@ tags:
   - cloudflare
   - astro
 draft: false
+pinned: true
 ---
 這陣子趁著把部落格從 Hexo 遷移到 Astro，順手把整個寫作與發布的體驗大翻新了一遍。
 
@@ -77,13 +78,13 @@ curl -sL -o /dev/null -w "%{http_code}\n" https://rdap.org/domain/xavierforge.de
 ```
 確認 `xavierforge.dev` 可以註冊後，我就直接到 [Cloudflare Registrar](https://www.cloudflare.com/products/registrar/) 下單買起來了 (好吧，其實直接在網頁查就知道有沒有被註冊過了)。
 這裡強烈推薦在 Cloudflare 買網域，因為他們主打「原價續約」，沒有一堆首年便宜、次年宰肥羊的定價陷阱。
-![cloudflare registrar|700](assets/github-pages-custom-domain/file-20260527153033663.png)
+![Cloudflare Registrar 查詢網域，購買價與續約同價（原價續約）|700](assets/github-pages-custom-domain/file-20260527153033663.png)
 > [!WARNING] 溫馨提醒
 > 網域註冊一旦刷卡下單就無法反悔，也不退款，所以送出前請務必把眼睛睜大，再三檢查拼字有沒有錯！
 ## 第二步：在 Cloudflare 設定 DNS
 買好網域後，我們要設定 DNS，讓這個新門牌能正確指向 GitHub Pages 這棟房子。
 請進到 Cloudflare 後台 $\rightarrow$ 您的網域 $\rightarrow$ DNS $\rightarrow$ Records，準備新增以下幾筆紀錄。
-![DNS Setting|700](assets/github-pages-custom-domain/file-20260527153033640.png)
+![Cloudflare 後台的 DNS → Records 設定頁面|700](assets/github-pages-custom-domain/file-20260527153033640.png)
 注意，稍後在加紀錄時，Proxy 一定要關成 DNS only (灰雲)，這朵雲預設是 **橘色 (Proxied)**，**一定要記得點一下變成灰色 (DNS only)**。
 這是因為，開橘雲的話流量會先走 Cloudflare 自己的 SSL 憑證，GitHub 系統就沒辦法自動為我們的網域簽發專屬的 Let's Encrypt 憑證，甚至還可能因為兩邊的 SSL 模式衝突，導致網站陷入無窮轉址迴圈 (Redirect Loop)。
 而設定成灰雲，代表流量會直接乾淨地打到 GitHub Pages，讓 GitHub 全權處理發憑證的事宜。
@@ -108,6 +109,7 @@ curl -sL -o /dev/null -w "%{http_code}\n" https://rdap.org/domain/xavierforge.de
    這招在用託管服務時超方便，要是哪天 GitHub 換了 IP，我們也不用回來改設定，GitHub 自己知道該怎麼處理。
    - Name: `www`
    - Target: `xavierforge.github.io`
+
 設定好之後，可以在終端機用 `dig` 指令驗證一下 DNS 有沒有擴散生效：
 ```bash
 dig +short xavierforge.dev
@@ -238,7 +240,7 @@ curl -sI https://www.xavierforge.dev | grep -Ei "^HTTP/|^location:"
 curl -sI https://xavierforge.github.io/ | grep -Ei "^HTTP/|^location:"
 ```
 如果設定正確，主網域會順利拿到 `200`，而後面兩個轉址的指令，終端機預期會印出類似這樣的輸出：
-![curl result|600](assets/github-pages-custom-domain/file-20260527153033637.png)
+![curl 檢查結果：主網域回 200、舊 github.io 以 301 轉址到新網域|600](assets/github-pages-custom-domain/file-20260527153033637.png)
 看到這兩行，確認都有乖乖回傳 `301` 並指到新網域，就完美了！
 ## 第五步：帳號層級網域驗證 (防搶接管)
 最後一步非常重要，我們要將這個網域綁定驗證到自己的 GitHub 帳號上。
@@ -246,14 +248,14 @@ curl -sI https://xavierforge.github.io/ | grep -Ei "^HTTP/|^location:"
 這部分沒有公開的 API 可以打，必須乖乖切換到瀏覽器走網頁 UI：
 1. 開啟帳號設定的 Pages 頁面：[https://github.com/settings/pages](https://github.com/settings/pages) (注意！是 "個人帳號" 的 Settings，不是單一 Repo 的 Settings)。
 2. 點擊 `Verified domains` $\rightarrow$ `Add a domain`，輸入網域 (例如 `xavierforge.dev`)。
-![pages|600](assets/github-pages-custom-domain/file-20260527153033633.png)
+![GitHub 個人帳號 Settings → Pages → Verified domains → Add a domain|600](assets/github-pages-custom-domain/file-20260527153033633.png)
 3. GitHub 會給我們一筆 TXT 紀錄的資訊：
+![GitHub 提供的網域驗證 TXT 紀錄（Name 與 Value）|600](assets/github-pages-custom-domain/file-20260527153033629.png)
    - **Name：** `_github-pages-challenge-<GitHub帳號>`
    - **Value：** 一串隨機生成的 token 字串。
-![txt|600](assets/github-pages-custom-domain/file-20260527153033629.png)
 4. 回到 Cloudflare 的 DNS 設定頁面，新增這筆 TXT 紀錄。
    現在完整的設定應該長這樣：
-![full setting|500](assets/github-pages-custom-domain/file-20260527153033625.png)
+![在 Cloudflare 設定完成的完整 DNS 紀錄一覽|500](assets/github-pages-custom-domain/file-20260527153033625.png)
 5. 在終端機用 `dig` 確認紀錄生效後，回到 GitHub 按下 `Verify`。
    ```bash
    # 檢查 TXT 紀錄是否已經在 DNS 上生效
