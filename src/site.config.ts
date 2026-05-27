@@ -62,6 +62,7 @@ export const expressiveCodeOptions: AstroExpressiveCodeOptions = {
 			Ts: "typescript",
 			Rust: "rust",
 			Yaml: "yaml",
+			YAML: "yaml",
 			Json: "json",
 			Md: "markdown",
 			Markdown: "markdown",

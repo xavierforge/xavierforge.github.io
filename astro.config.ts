@@ -13,10 +13,11 @@ import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import rehypeExternalLinks from "rehype-external-links";
 import rehypeUnwrapImages from "rehype-unwrap-images";
 // Remark plugins
+import remarkBreaks from "remark-breaks"; /* single newline -> <br>, matching Obsidian */
 import remarkDirective from "remark-directive"; /* Handle ::: directives as nodes */
-import remarkObsidianCallout from "remark-obsidian-callout";
 import { remarkAdmonitions } from "./src/plugins/remark-admonitions"; /* Add admonitions */
 import { remarkGithubCard } from "./src/plugins/remark-github-card";
+import { remarkObsidianCallouts } from "./src/plugins/remark-obsidian-callouts"; /* > [!warning] -> admonition */
 import { remarkObsidianImages } from "./src/plugins/remark-obsidian-images";
 import { remarkReadingTime } from "./src/plugins/remark-reading-time";
 import { expressiveCodeOptions, siteConfig } from "./src/site.config";
@@ -84,10 +85,11 @@ export default defineConfig({
 		remarkPlugins: [
 			remarkReadingTime,
 			remarkObsidianImages,
-			remarkObsidianCallout,
+			remarkObsidianCallouts, // > [!type] callouts -> Cactus admonitions (before remarkBreaks)
 			remarkDirective,
 			remarkGithubCard,
 			remarkAdmonitions,
+			remarkBreaks, // last: structural plugins parse first, then soft breaks -> <br>
 		],
 		remarkRehype: {
 			footnoteLabelProperties: {

@@ -42,7 +42,8 @@ Cactus's `notes` collection / routes were removed in the rebuild; if you want a 
 The Obsidian-specific authoring surface is bridged through two custom remark plugins (registered in `astro.config.ts`):
 
 - `src/plugins/remark-obsidian-images.ts` — rewrites bare relative image paths (`assets/Hello/foo.png`) to Astro-friendly (`./assets/Hello/foo.png`) so the asset pipeline picks them up, and treats numeric alt text (`![400](...)`) as a pixel `width` attribute on the rendered `<img>`. External URLs are passed through untouched.
-- `remark-obsidian-callout` (npm) — renders Obsidian's `> [!note]` / `> [!warning]` / etc. callout syntax. Coexists with Cactus's existing `:::note` directive admonitions (`src/plugins/remark-admonitions.ts`).
+- `src/plugins/remark-obsidian-callouts.ts` — rewrites Obsidian's `> [!note]` / `> [!warning]` / etc. callout blockquotes into the same `<aside class="admonition">` markup as Cactus's `:::note` directive admonitions (`src/plugins/remark-admonitions.ts`), so both share one set of styles. Runs before `remark-breaks`.
+- `remark-breaks` (npm) — renders a single newline as a `<br>` (matching Obsidian), so soft-wrapped lines don't collapse into one paragraph.
 
 Image path convention from Obsidian: `published/<title>.md` + `published/assets/<title>/<file>.png`. Sync mirrors the whole `published/` tree to `src/content/post/`, so relative `assets/<title>/<file>.png` paths just work.
 
