@@ -60,8 +60,8 @@ export const remarkObsidianCallouts: Plugin<[], Root> = () => (tree) => {
 		const match = firstLine.match(CALLOUT_RE);
 		if (!match) return;
 
-		const admonitionType = CALLOUT_TO_ADMONITION[match[1].trim().toLowerCase()] ?? "note";
-		const title = match[2].trim() || admonitionType;
+		const admonitionType = CALLOUT_TO_ADMONITION[(match[1] ?? "").trim().toLowerCase()] ?? "note";
+		const title = (match[2] ?? "").trim() || admonitionType;
 
 		// Drop the marker line; keep everything after it as the callout body.
 		firstText.value = newlineIdx === -1 ? "" : firstText.value.slice(newlineIdx + 1);

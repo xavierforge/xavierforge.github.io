@@ -14,7 +14,10 @@ export function hasCJK(text: string): boolean {
 // render as blanks. Fetch just the glyphs a title uses from Google Fonts as a
 // satori-compatible woff subset. An old User-Agent makes Google serve woff/ttf
 // instead of woff2 (which satori can't parse). Returns [] for Latin-only text.
-export async function loadCJKFonts(text: string, weight: Font["weight"]): Promise<Font[]> {
+export async function loadCJKFonts(
+	text: string,
+	weight: NonNullable<Font["weight"]>,
+): Promise<Font[]> {
 	if (!hasCJK(text)) return [];
 
 	const family = "Noto Sans TC";
@@ -25,9 +28,9 @@ export async function loadCJKFonts(text: string, weight: Font["weight"]): Promis
 		},
 	}).then((r) => r.text());
 
-	const match = css.match(/src:\s*url\((https:\/\/[^)]+)\)/);
-	if (!match) throw new Error(`Could not extract a font URL from Google Fonts for "${family}"`);
+	const fontUrl = css.match(/src:\s*url\((https:\/\/[^)]+)\)/)?.[1];
+	if (!fontUrl) throw new Error(`Could not extract a font URL from Google Fonts for "${family}"`);
 
-	const data = await fetch(match[1]).then((r) => r.arrayBuffer());
+	const data = await fetch(fontUrl).then((r) => r.arrayBuffer());
 	return [{ data, name: family, style: "normal", weight }];
 }
