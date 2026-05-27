@@ -47,7 +47,7 @@ export const expressiveCodeOptions: AstroExpressiveCodeOptions = {
 		}
 		return `[data-theme="${theme.name}"]`;
 	},
-	themes: ["dracula", "github-light"],
+	themes: ["catppuccin-frappe", "catppuccin-latte"],
 	useThemedScrollbars: false,
 	shiki: {
 		langAlias: {
