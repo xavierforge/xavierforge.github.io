@@ -13,6 +13,7 @@ import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import rehypeExternalLinks from "rehype-external-links";
 import rehypeKatex from "rehype-katex"; /* render math nodes via KaTeX */
 import rehypeUnwrapImages from "rehype-unwrap-images";
+import { rehypeImageFigure } from "./src/plugins/rehype-image-figure"; /* <img> -> <figure> + <figcaption> */
 // Remark plugins
 import remarkBreaks from "remark-breaks"; /* single newline -> <br>, matching Obsidian */
 import remarkDirective from "remark-directive"; /* Handle ::: directives as nodes */
@@ -29,6 +30,9 @@ export default defineConfig({
 	site: siteConfig.url,
 	image: {
 		domains: ["webmention.io"],
+		// Responsive images: generate a srcset (incl. 2x) so Markdown images stay
+		// sharp on HiDPI / mobile screens instead of upscaling a single width.
+		layout: "constrained",
 	},
 	integrations: [
 		expressiveCode(expressiveCodeOptions),
@@ -83,6 +87,7 @@ export default defineConfig({
 				},
 			],
 			rehypeUnwrapImages,
+			rehypeImageFigure,
 			rehypeKatex,
 		],
 		remarkPlugins: [

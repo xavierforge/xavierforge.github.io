@@ -41,6 +41,22 @@ export default {
 						hr: {
 							borderTopStyle: "dashed",
 						},
+						img: {
+							display: "block",
+							marginInline: "auto",
+						},
+						/* image figures (rehype-image-figure) — tight spacing + muted caption */
+						".post-figure": {
+							marginTop: "0.625em",
+							marginBottom: "0.625em",
+						},
+						".post-figure figcaption": {
+							marginTop: "0.5em",
+							fontSize: "0.875em",
+							lineHeight: "1.5",
+							color: "var(--color-muted)",
+							textAlign: "center",
+						},
 						strong: {
 							fontWeight: "700",
 						},
