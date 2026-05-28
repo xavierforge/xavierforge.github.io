@@ -10,7 +10,8 @@ Personal blog at `https://xavierforge.dev/`, built on Astro 6 with a forked copy
 
 - `npm install` — install dependencies. Rebuilds `sharp` via the `postinstall` hook.
 - `npm run dev` — local dev server (`astro dev`).
-- `npm run sync` — `rsync` the Obsidian vault's `published/` folder into `src/content/post/`. Edit `scripts/sync.sh` (or set `VAULT_PUBLISHED`) before first use.
+- `npm run sync` — `rsync` the Obsidian vault's `published/` folder into `src/content/post/`. Edit `scripts/sync.sh` (or set `VAULT_PUBLISHED`) before first use. Runs the whitespace check (below) against the vault source first, warn-only.
+- `npm run check:whitespace` — scan `src/content/post/` for invisible/odd whitespace (see "Source markdown hygiene"). Pass flags through npm: `-- --verbose` lists hidden info findings, `-- --strict` exits non-zero on any issue.
 - `npm run build` — `astro build` → `dist/`, then `pagefind` indexes the site into `dist/pagefind/`.
 - `npm run preview` — preview the built site.
 - `npm run check` — `astro check` + `biome check`.
@@ -46,6 +47,14 @@ The Obsidian-specific authoring surface is bridged through two custom remark plu
 - `remark-breaks` (npm) — renders a single newline as a `<br>` (matching Obsidian), so soft-wrapped lines don't collapse into one paragraph.
 
 Image path convention from Obsidian: `published/<title>.md` + `published/assets/<title>/<file>.png`. Sync mirrors the whole `published/` tree to `src/content/post/`, so relative `assets/<title>/<file>.png` paths just work.
+
+### Source markdown hygiene
+
+Pasting into Obsidian (from LLM output, web pages, Word) drags in invisible/odd whitespace — hair spaces (U+200A), no-break spaces (U+00A0), zero-width chars — that render as stray gaps. `scripts/check-whitespace.mjs` (Node, no deps) scans for these and is wired into `sync.sh` as a warn-only pre-sync step (never blocks a sync). It is tuned for this blog's conventions:
+
+- **A single thin space hugging an em/en dash (`字—字`, U+200A on each side) is an intentional typographic style — do NOT strip it.** The checker allows it; only anomalies are flagged: zero-width chars, runs of 2+ special spaces (the "doubled hair space" bug), and stray thin spaces not adjacent to a dash. A single NBSP (used to keep e.g. `Map 2D` together) is info-only, hidden unless `--verbose`.
+- Fenced code blocks are skipped (pasted Python is full of trailing spaces that aren't the point).
+- Fix findings in the **Obsidian vault** source, not the repo copy. The `sync` step scans the vault; `npm run check:whitespace` scans the synced `src/content/post/`.
 
 ### Layout split
 

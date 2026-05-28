@@ -20,6 +20,14 @@ fi
 
 mkdir -p "$DEST"
 
+# Pre-sync lint: warn (but don't block) about invisible / odd whitespace in the
+# source markdown before it propagates into the repo — hair spaces, no-break
+# spaces, zero-width chars that sneak in via copy-paste. Warn-only by design so
+# it never aborts a sync; run `npm run check:whitespace` on demand, or add
+# --strict there for a hard gate.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+node "$SCRIPT_DIR/check-whitespace.mjs" "$VAULT_PUBLISHED" || true
+
 # --delete keeps the repo a mirror of vault/published — files removed from
 # the vault disappear from the repo on the next sync. Add --dry-run while
 # testing if that scares you.
