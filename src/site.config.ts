@@ -1,5 +1,5 @@
 import type { AstroExpressiveCodeOptions } from "astro-expressive-code";
-import type { SiteConfig } from "@/types";
+import type { AnalyticsConfig, CommentsConfig, SiteConfig } from "@/types";
 
 export const siteConfig: SiteConfig = {
 	url: "https://xavierforge.dev/",
@@ -17,6 +17,28 @@ export const siteConfig: SiteConfig = {
 			year: "numeric",
 		},
 	},
+};
+
+// Giscus comments (GitHub Discussions backend). Fill these from https://giscus.app
+// after enabling Discussions on the repo and installing the giscus GitHub App.
+// See README/setup notes for the one-time steps. Leave `repo` empty to disable.
+export const commentsConfig: CommentsConfig = {
+	category: "Blog",
+	categoryId: "DIC_kwDOJcSeT84C-E8A",
+	inputPosition: "bottom",
+	lang: "zh-TW",
+	mapping: "pathname",
+	reactionsEnabled: true,
+	repo: "xavierforge/xavierforge.github.io",
+	repoId: "R_kgDOJcSeTw",
+};
+
+// GoatCounter visitor stats. `code` is the subdomain of your GoatCounter site:
+// https://<code>.goatcounter.com. Leave empty to disable tracking + counters.
+// Requires "Allow adding visitor counts on your website" enabled in GoatCounter
+// Settings → Site for the on-page counters to load (CORS).
+export const analyticsConfig: AnalyticsConfig = {
+	code: "xavierdataforge",
 };
 
 export const menuLinks: { path: string; title: string }[] = [

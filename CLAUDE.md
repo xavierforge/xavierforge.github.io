@@ -65,6 +65,28 @@ Pasting into Obsidian (from LLM output, web pages, Word) drags in invisible/odd 
 - `src/pages/about.astro` — static About content.
 - `src/site.config.ts` — site title, author, description, URL, date locale, and `menuLinks` for the nav.
 
+### Comments & visitor stats
+
+Both are opt-in via `src/site.config.ts` and render nothing until configured, so the
+site builds clean with empty values.
+
+- **Comments — Giscus** (GitHub Discussions backend). `src/components/Comments.astro` is
+  rendered at the bottom of `BlogPost.astro`; it lazy-loads `giscus.app/client.js` and
+  syncs its light/dark theme to the site's `theme-change` event. One-time setup: on the
+  repo, Settings → enable **Discussions**, create a category (e.g. *Announcements*),
+  install the [giscus GitHub App](https://github.com/apps/giscus) with access to the repo,
+  then visit <https://giscus.app>, enter `owner/name`, and copy the generated `repo`,
+  `repoId`, `category`, `categoryId` into `commentsConfig`. Leave `repo` empty to disable.
+- **Visitor stats — GoatCounter**. The tracking pixel (`gc.zgo.at/count.js`) loads from
+  `Base.astro` **only in PROD** (`import.meta.env.PROD`) so dev/preview hits aren't counted.
+  `src/components/GoatCounter.astro` is a reusable on-page counter that fetches
+  `/counter/<path>.json` client-side: `path="TOTAL" metric="count_unique"` for site-wide UV
+  in the footer, and the default (current page path) `metric="count"` for per-post PV in
+  `Masthead.astro`. Setup: register a free site at <https://www.goatcounter.com>, put its
+  subdomain in `analyticsConfig.code` (`https://<code>.goatcounter.com`), and in GoatCounter
+  Settings → *Site* enable **"Allow adding visitor counts on your website"** (needed for the
+  on-page counters' CORS). Counters stay hidden until data exists / the endpoint responds.
+
 ### Styling
 
 Tailwind v4 via `@tailwindcss/vite`. Theme tokens (colors, spacing) come from Cactus's CSS in `src/styles/`. `vite` is pinned to `7.3.3` in `package.json` `overrides` because `@tailwindcss/vite` 4.3.0 chokes on the resolver shape in newer vite/rolldown releases — bump both together when upgrading.

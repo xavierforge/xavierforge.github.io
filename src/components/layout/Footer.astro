@@ -1,5 +1,6 @@
 ---
 import { Icon } from "astro-icon/components";
+import GoatCounter from "@/components/GoatCounter.astro";
 import { socialLinks } from "@/data/social";
 import { menuLinks, siteConfig } from "@/site.config";
 
@@ -12,6 +13,7 @@ const year = new Date().getFullYear();
 	<div class="flex flex-wrap items-center justify-center gap-x-2">
 		<span>&copy; {siteConfig.author} {year}.</span>
 		<span>🚀</span>
+		<GoatCounter label="visitors" metric="count_unique" path="TOTAL" />
 		<ul class="flex items-center gap-x-2">
 			{
 				socialLinks.map(({ friendlyName, link, icon }) => (

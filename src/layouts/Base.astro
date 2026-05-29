@@ -4,7 +4,7 @@ import Footer from "@/components/layout/Footer.astro";
 import Header from "@/components/layout/Header.astro";
 import SkipLink from "@/components/SkipLink.astro";
 import ThemeProvider from "@/components/ThemeProvider.astro";
-import { siteConfig } from "@/site.config";
+import { analyticsConfig, siteConfig } from "@/site.config";
 import type { SiteMeta } from "@/types";
 
 interface Props {
@@ -14,6 +14,12 @@ interface Props {
 const {
 	meta: { articleDate, description = siteConfig.description, ogImage, title },
 } = Astro.props;
+
+// Only count real visitors: load GoatCounter on the deployed site, not in dev/preview.
+const goatCounterUrl =
+	import.meta.env.PROD && analyticsConfig.code
+		? `https://${analyticsConfig.code}.goatcounter.com/count`
+		: null;
 ---
 
 <html class="scroll-smooth" lang={siteConfig.lang}>
@@ -50,5 +56,10 @@ const {
 				]
 			}
 		</script>
+		{
+			goatCounterUrl && (
+				<script is:inline async data-goatcounter={goatCounterUrl} src="//gc.zgo.at/count.js" />
+			)
+		}
 	</body>
 </html>
