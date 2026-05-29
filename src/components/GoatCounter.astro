@@ -1,0 +1,62 @@
+---
+import { analyticsConfig } from "@/site.config";
+
+interface Props {
+	/** GoatCounter path. "TOTAL" = whole site; omit to use the current page path. */
+	path?: string;
+	/** "count" = pageviews (PV); "count_unique" = unique visitors (UV). */
+	metric?: "count" | "count_unique";
+	/** Inline label shown before the number, e.g. "views". */
+	label?: string;
+	class?: string;
+}
+
+const { class: className, label, metric = "count", path } = Astro.props;
+const { code } = analyticsConfig;
+
+// Disabled until a GoatCounter site code is set in src/site.config.ts.
+const base = code.length > 0 ? `https://${code}.goatcounter.com` : null;
+---
+
+{
+	base && (
+		<span
+			class:list={["gc-count inline-flex items-center gap-1 tabular-nums", className]}
+			data-gc-base={base}
+			data-gc-metric={metric}
+			data-gc-path={path ?? ""}
+			hidden
+		>
+			<span class="gc-count-value">–</span>
+			{label && <span>{label}</span>}
+		</span>
+	)
+}
+
+<script>
+	async function loadCounts() {
+		const nodes = document.querySelectorAll<HTMLElement>(".gc-count[data-gc-base]");
+		for (const el of nodes) {
+			if (el.dataset.gcLoaded) continue;
+			el.dataset.gcLoaded = "1";
+			const base = el.dataset.gcBase!;
+			// GoatCounter appends the page path (with its leading slash) after /counter,
+			// e.g. /counter//posts/foo/.json. "TOTAL" is the whole-site figure.
+			const path = el.dataset.gcPath || location.pathname;
+			const metric = el.dataset.gcMetric === "count_unique" ? "count_unique" : "count";
+			const valueEl = el.querySelector<HTMLElement>(".gc-count-value");
+			try {
+				const res = await fetch(`${base}/counter/${encodeURI(path)}.json`);
+				if (!res.ok) throw new Error(String(res.status));
+				const data = (await res.json()) as Record<string, string>;
+				if (valueEl) valueEl.textContent = data[metric] ?? "0";
+				el.hidden = false;
+			} catch {
+				// No data yet, or visitor counts disabled in GoatCounter — stay hidden.
+			}
+		}
+	}
+
+	loadCounts();
+	document.addEventListener("astro:page-load", loadCounts);
+</script>

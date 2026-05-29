@@ -11,6 +11,25 @@ export interface SiteConfig {
 	url: string;
 }
 
+/** Giscus comments config (https://giscus.app) */
+export interface CommentsConfig {
+	category: string;
+	categoryId: string;
+	inputPosition: "top" | "bottom";
+	lang: string;
+	mapping: "pathname" | "url" | "title" | "og:title" | "specific" | "number";
+	reactionsEnabled: boolean;
+	/** "owner/name"; empty string disables comments */
+	repo: string;
+	repoId: string;
+}
+
+/** GoatCounter analytics config (https://www.goatcounter.com) */
+export interface AnalyticsConfig {
+	/** GoatCounter site code → https://<code>.goatcounter.com; empty disables it */
+	code: string;
+}
+
 export interface PaginationLink {
 	srLabel?: string;
 	text?: string;

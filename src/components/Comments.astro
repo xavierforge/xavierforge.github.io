@@ -1,0 +1,81 @@
+---
+import { commentsConfig } from "@/site.config";
+
+const { category, categoryId, inputPosition, lang, mapping, reactionsEnabled, repo, repoId } =
+	commentsConfig;
+
+// Comments are off until a repo is configured in src/site.config.ts.
+const enabled = repo.length > 0;
+---
+
+{
+	enabled && (
+		<section class="mt-16 border-t border-muted/30 pt-8" id="comments">
+			<h2 class="title mb-4 text-xl">Comments</h2>
+			<div
+				class="giscus"
+				data-category={category}
+				data-category-id={categoryId}
+				data-input-position={inputPosition}
+				data-lang={lang}
+				data-mapping={mapping}
+				data-reactions-enabled={reactionsEnabled ? "1" : "0"}
+				data-repo={repo}
+				data-repo-id={repoId}
+			/>
+		</section>
+	)
+}
+
+{
+	enabled && (
+		<script>
+			const host = document.querySelector(".giscus") as HTMLElement | null;
+
+			function giscusTheme() {
+				return document.documentElement.getAttribute("data-theme") === "light"
+					? "light"
+					: "dark";
+			}
+
+			function loadGiscus() {
+				if (!host || host.querySelector("script")) return;
+				const s = document.createElement("script");
+				s.src = "https://giscus.app/client.js";
+				s.async = true;
+				s.crossOrigin = "anonymous";
+				s.setAttribute("data-repo", host.dataset.repo!);
+				s.setAttribute("data-repo-id", host.dataset.repoId!);
+				s.setAttribute("data-category", host.dataset.category!);
+				s.setAttribute("data-category-id", host.dataset.categoryId!);
+				s.setAttribute("data-mapping", host.dataset.mapping!);
+				s.setAttribute("data-strict", "0");
+				s.setAttribute("data-reactions-enabled", host.dataset.reactionsEnabled!);
+				s.setAttribute("data-emit-metadata", "0");
+				s.setAttribute("data-input-position", host.dataset.inputPosition!);
+				s.setAttribute("data-theme", giscusTheme());
+				s.setAttribute("data-lang", host.dataset.lang!);
+				s.setAttribute("data-loading", "lazy");
+				host.appendChild(s);
+			}
+
+			function setTheme(theme: string) {
+				const iframe = document.querySelector<HTMLIFrameElement>("iframe.giscus-frame");
+				iframe?.contentWindow?.postMessage(
+					{ giscus: { setConfig: { theme } } },
+					"https://giscus.app",
+				);
+			}
+
+			loadGiscus();
+
+			// Keep giscus in sync with the site theme toggle.
+			document.addEventListener("theme-change", (e) => {
+				setTheme((e as CustomEvent).detail.theme === "light" ? "light" : "dark");
+			});
+
+			// Re-init after Astro view transitions / bfcache restores.
+			document.addEventListener("astro:page-load", loadGiscus);
+		</script>
+	)
+}

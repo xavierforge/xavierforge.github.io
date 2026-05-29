@@ -11,6 +11,7 @@
 		"postbuild": "pagefind --site dist",
 		"preview": "astro preview",
 		"sync": "bash scripts/sync.sh",
+		"check:whitespace": "node scripts/check-whitespace.mjs src/content/post",
 		"check": "astro check && biome check",
 		"lint": "biome check --write",
 		"format": "prettier -w . --cache"

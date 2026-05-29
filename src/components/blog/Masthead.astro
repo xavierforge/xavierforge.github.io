@@ -2,6 +2,7 @@
 import { Image } from "astro:assets";
 import type { CollectionEntry } from "astro:content";
 import FormattedDate from "@/components/FormattedDate.astro";
+import GoatCounter from "@/components/GoatCounter.astro";
 
 interface Props {
 	content: CollectionEntry<"post">;
@@ -40,6 +41,7 @@ const dateTimeOptions: Intl.DateTimeFormatOptions = {
 		<FormattedDate date={data.publishDate} dateTimeOptions={dateTimeOptions} /> /{" "}
 		{readingTime}
 	</p>
+	<GoatCounter class="font-semibold" label="views" metric="count" />
 	{
 		data.updatedDate && (
 			<span class="bg-quote/5 text-quote rounded-lg px-2 py-1">

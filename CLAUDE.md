@@ -10,7 +10,8 @@ Personal blog at `https://xavierforge.dev/`, built on Astro 6 with a forked copy
 
 - `npm install` — install dependencies. Rebuilds `sharp` via the `postinstall` hook.
 - `npm run dev` — local dev server (`astro dev`).
-- `npm run sync` — `rsync` the Obsidian vault's `published/` folder into `src/content/post/`. Edit `scripts/sync.sh` (or set `VAULT_PUBLISHED`) before first use.
+- `npm run sync` — `rsync` the Obsidian vault's `published/` folder into `src/content/post/`. Edit `scripts/sync.sh` (or set `VAULT_PUBLISHED`) before first use. Runs the whitespace check (below) against the vault source first, warn-only.
+- `npm run check:whitespace` — scan `src/content/post/` for invisible/odd whitespace (see "Source markdown hygiene"). Pass flags through npm: `-- --verbose` lists hidden info findings, `-- --strict` exits non-zero on any issue.
 - `npm run build` — `astro build` → `dist/`, then `pagefind` indexes the site into `dist/pagefind/`.
 - `npm run preview` — preview the built site.
 - `npm run check` — `astro check` + `biome check`.
@@ -47,6 +48,14 @@ The Obsidian-specific authoring surface is bridged through two custom remark plu
 
 Image path convention from Obsidian: `published/<title>.md` + `published/assets/<title>/<file>.png`. Sync mirrors the whole `published/` tree to `src/content/post/`, so relative `assets/<title>/<file>.png` paths just work.
 
+### Source markdown hygiene
+
+Pasting into Obsidian (from LLM output, web pages, Word) drags in invisible/odd whitespace — hair spaces (U+200A), no-break spaces (U+00A0), zero-width chars — that render as stray gaps. `scripts/check-whitespace.mjs` (Node, no deps) scans for these and is wired into `sync.sh` as a warn-only pre-sync step (never blocks a sync). It is tuned for this blog's conventions:
+
+- **A single thin space hugging an em/en dash (`字—字`, U+200A on each side) is an intentional typographic style — do NOT strip it.** The checker allows it; only anomalies are flagged: zero-width chars, runs of 2+ special spaces (the "doubled hair space" bug), and stray thin spaces not adjacent to a dash. A single NBSP (used to keep e.g. `Map 2D` together) is info-only, hidden unless `--verbose`.
+- Fenced code blocks are skipped (pasted Python is full of trailing spaces that aren't the point).
+- Fix findings in the **Obsidian vault** source, not the repo copy. The `sync` step scans the vault; `npm run check:whitespace` scans the synced `src/content/post/`.
+
 ### Layout split
 
 - `src/layouts/Base.astro` — shell (head, header, footer, theme provider).
@@ -55,6 +64,28 @@ Image path convention from Obsidian: `published/<title>.md` + `published/assets/
 - `src/pages/portfolio.astro` — projects collection, card grid.
 - `src/pages/about.astro` — static About content.
 - `src/site.config.ts` — site title, author, description, URL, date locale, and `menuLinks` for the nav.
+
+### Comments & visitor stats
+
+Both are opt-in via `src/site.config.ts` and render nothing until configured, so the
+site builds clean with empty values.
+
+- **Comments — Giscus** (GitHub Discussions backend). `src/components/Comments.astro` is
+  rendered at the bottom of `BlogPost.astro`; it lazy-loads `giscus.app/client.js` and
+  syncs its light/dark theme to the site's `theme-change` event. One-time setup: on the
+  repo, Settings → enable **Discussions**, create a category (e.g. *Announcements*),
+  install the [giscus GitHub App](https://github.com/apps/giscus) with access to the repo,
+  then visit <https://giscus.app>, enter `owner/name`, and copy the generated `repo`,
+  `repoId`, `category`, `categoryId` into `commentsConfig`. Leave `repo` empty to disable.
+- **Visitor stats — GoatCounter**. The tracking pixel (`gc.zgo.at/count.js`) loads from
+  `Base.astro` **only in PROD** (`import.meta.env.PROD`) so dev/preview hits aren't counted.
+  `src/components/GoatCounter.astro` is a reusable on-page counter that fetches
+  `/counter/<path>.json` client-side: `path="TOTAL" metric="count_unique"` for site-wide UV
+  in the footer, and the default (current page path) `metric="count"` for per-post PV in
+  `Masthead.astro`. Setup: register a free site at <https://www.goatcounter.com>, put its
+  subdomain in `analyticsConfig.code` (`https://<code>.goatcounter.com`), and in GoatCounter
+  Settings → *Site* enable **"Allow adding visitor counts on your website"** (needed for the
+  on-page counters' CORS). Counters stay hidden until data exists / the endpoint responds.
 
 ### Styling
 
