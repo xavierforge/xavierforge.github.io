@@ -52,8 +52,15 @@ const base = code.length > 0 ? `https://${code}.goatcounter.com` : null;
 				const res = await fetch(`${base}/counter/${encodeURI(path)}.json`);
 				if (!res.ok) throw new Error(String(res.status));
 				const data = (await res.json()) as Record<string, string>;
-				if (valueEl) valueEl.textContent = data[metric] ?? "0";
-				el.hidden = false;
+				const raw = data[metric] ?? "0";
+				// GoatCounter's TOTAL/aggregate counters can lag (cached, ~hourly), so a
+				// real page may briefly report 0. Stay hidden until there's a positive
+				// number rather than show a misleading "0 visitors".
+				const n = Number.parseInt(raw.replace(/[^0-9]/g, ""), 10) || 0;
+				if (n > 0) {
+					if (valueEl) valueEl.textContent = raw;
+					el.hidden = false;
+				}
 			} catch {
 				// No data yet, or visitor counts disabled in GoatCounter — stay hidden.
 			}
