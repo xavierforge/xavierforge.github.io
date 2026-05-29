@@ -41,8 +41,11 @@ const base = code.length > 0 ? `https://${code}.goatcounter.com` : null;
 			el.dataset.gcLoaded = "1";
 			const base = el.dataset.gcBase!;
 			// GoatCounter appends the page path (with its leading slash) after /counter,
-			// e.g. /counter//posts/foo/.json. "TOTAL" is the whole-site figure.
-			const path = el.dataset.gcPath || location.pathname;
+			// e.g. /counter//posts/foo.json. "TOTAL" is the whole-site figure.
+			let path = el.dataset.gcPath || location.pathname;
+			// GoatCounter normalizes stored paths by stripping the trailing slash (except
+			// root "/"), so /posts/foo/ is keyed as /posts/foo — match that or we 404.
+			if (path !== "TOTAL" && path.length > 1) path = path.replace(/\/+$/, "");
 			const metric = el.dataset.gcMetric === "count_unique" ? "count_unique" : "count";
 			const valueEl = el.querySelector<HTMLElement>(".gc-count-value");
 			try {
