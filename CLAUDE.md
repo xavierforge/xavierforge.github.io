@@ -56,6 +56,16 @@ Pasting into Obsidian (from LLM output, web pages, Word) drags in invisible/odd 
 - Fenced code blocks are skipped (pasted Python is full of trailing spaces that aren't the point).
 - Fix findings in the **Obsidian vault** source, not the repo copy. The `sync` step scans the vault; `npm run check:whitespace` scans the synced `src/content/post/`.
 
+### Bilingual posts (in-page EN/中文 toggle)
+
+Posts are authored in Chinese (the vault is the source of truth). An optional English translation lives **in the repo only** as a sibling `src/content/post/<slug>.en.md` — never in the vault. Key pieces:
+
+- **Survives sync:** `scripts/sync.sh` excludes `*.en.md` from the `rsync --delete`, so the vault mirror never wipes translations. Same-folder placement means image paths (`assets/<slug>/…`) and the `![alt|600](…)` width syntax resolve identically to the Chinese post — no path rewrites.
+- **Id convention:** `src/content.config.ts` gives the `post` loader a custom `generateId` that preserves the file path (the default slugifies, collapsing `foo.en.md` → `fooen`). So the translation's id is `<slug>.en`.
+- **Hidden from listings/routes:** `getAllPosts()` in `src/data/post.ts` filters out `id.endsWith(".en")`, which covers every surface at once (index, `/posts`, tags, RSS, og-image, and the `[...slug]` page builder). `getPostTranslation(id)` looks up the `<slug>.en` companion.
+- **Rendering:** `src/pages/posts/[...slug].astro` renders both bodies into named slots (`body-zh`, `body-en`); `BlogPost.astro` wraps them in `data-lang` panels inside a `data-lang-scope`, shows the reusable `LangToggle.astro` control (default 中文, persisted in `localStorage["post-lang"]`) **only when a translation exists**, and prepends an "AI-translated" admonition to the English panel. Posts without a `.en.md` show no toggle. The post `<h1>` and TOC stay in the original language.
+- **Drift check:** each `.en.md` records a `sourceHash` of the Chinese body it was translated from. `npm run check:translations` (warn-only; `--strict` to gate) flags translations whose source has changed; `node scripts/check-translations.mjs src/content/post --update` re-stamps after (re)translating. Run it before pushing to see which originals drifted.
+
 ### Layout split
 
 - `src/layouts/Base.astro` — shell (head, header, footer, theme provider).

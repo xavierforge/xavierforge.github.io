@@ -1,10 +1,24 @@
 import { type CollectionEntry, getCollection } from "astro:content";
 
-/** filter out draft posts based on the environment */
+/** filter out draft posts based on the environment
+ *
+ * Also excludes `*.en.md` translations: they are not standalone posts but
+ * alternate-language bodies rendered in-page on their original post via a
+ * toggle (see getPostTranslation + BlogPost.astro). Excluding them here keeps
+ * them out of every listing/route at once — index, /posts, tags, RSS, og-image,
+ * and the [...slug] page builder all go through getAllPosts.
+ */
 export async function getAllPosts(): Promise<CollectionEntry<"post">[]> {
-	return await getCollection("post", ({ data }) => {
+	return await getCollection("post", ({ id, data }) => {
+		if (id.endsWith(".en")) return false;
 		return import.meta.env.PROD ? !data.draft : true;
 	});
+}
+
+/** Look up the English translation companion for a post id, if one exists. */
+export async function getPostTranslation(id: string): Promise<CollectionEntry<"post"> | undefined> {
+	const matches = await getCollection("post", (entry) => entry.id === `${id}.en`);
+	return matches[0];
 }
 
 /** Get tag metadata by tag name */

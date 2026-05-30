@@ -12,6 +12,7 @@
 		"preview": "astro preview",
 		"sync": "bash scripts/sync.sh",
 		"check:whitespace": "node scripts/check-whitespace.mjs src/content/post",
+		"check:translations": "node scripts/check-translations.mjs src/content/post",
 		"check": "astro check && biome check",
 		"lint": "biome check --write",
 		"format": "prettier -w . --cache"

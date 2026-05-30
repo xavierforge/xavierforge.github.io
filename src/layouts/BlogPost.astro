@@ -5,6 +5,7 @@ import Masthead from "@/components/blog/Masthead.astro";
 import TOC from "@/components/blog/TOC.astro";
 import WebMentions from "@/components/blog/webmentions/index.astro";
 import Comments from "@/components/Comments.astro";
+import LangToggle from "@/components/LangToggle.astro";
 
 import BaseLayout from "./Base.astro";
 
@@ -13,9 +14,11 @@ import "katex/dist/katex.min.css";
 
 interface Props {
 	post: CollectionEntry<"post">;
+	/** True when an English translation panel is supplied via the `body-en` slot. */
+	hasTranslation?: boolean;
 }
 
-const { post } = Astro.props;
+const { post, hasTranslation = false } = Astro.props;
 const { ogImage, title, description, updatedDate, publishDate } = post.data;
 const socialImage = ogImage ?? `/og-image/${post.id}.png`;
 const articleDate = updatedDate?.toISOString() ?? publishDate.toISOString();
@@ -37,8 +40,39 @@ const readingTime: string = remarkPluginFrontmatter.readingTime;
 			{!!headings.length && <TOC headings={headings} />}
 			<div
 				class="prose w-full max-w-none flex-1 prose-headings:font-semibold prose-headings:text-accent-2 prose-headings:before:absolute prose-headings:before:-ms-4 prose-headings:before:text-muted prose-headings:hover:before:text-accent sm:prose-headings:before:content-['#'] sm:prose-th:before:content-none"
+				data-lang-scope
 			>
-				<slot />
+				{
+					hasTranslation && (
+						<LangToggle class="not-prose mb-8" defaultLang="zh" storageKey="post-lang" />
+					)
+				}
+				<div data-lang="zh">
+					<slot name="body-zh" />
+				</div>
+				{
+					hasTranslation && (
+						<div data-lang="en" hidden>
+							<aside
+								aria-label="AI-translated"
+								class="admonition mb-8"
+								data-admonition-type="note"
+							>
+								<p class="admonition-title" aria-hidden="true">
+									AI-translated
+								</p>
+								<div class="admonition-content">
+									<p>
+										This article was machine-translated from the original Chinese with AI
+										assistance. If anything reads oddly or looks wrong, please{" "}
+										<a href="#comments">leave a comment</a> and I'll fix it.
+									</p>
+								</div>
+							</aside>
+							<slot name="body-en" />
+						</div>
+					)
+				}
 				<WebMentions />
 			</div>
 		</div>

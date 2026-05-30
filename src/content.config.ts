@@ -13,7 +13,15 @@ const baseSchema = z.object({
 });
 
 const post = defineCollection({
-	loader: glob({ base: "./src/content/post", pattern: "**/*.{md,mdx}" }),
+	loader: glob({
+		base: "./src/content/post",
+		pattern: "**/*.{md,mdx}",
+		// Preserve the file path as the id. The default generateId slugifies, which
+		// drops the dot and collapses `foo.en.md` → `fooen`; we rely on the `.en`
+		// suffix to detect/route-exclude in-page translations (see src/data/post.ts).
+		// Existing posts are already slug-clean, so their ids/URLs are unchanged.
+		generateId: ({ entry }) => entry.replace(/\.(md|mdx)$/, ""),
+	}),
 	schema: ({ image }) =>
 		baseSchema.extend({
 			description: z.string(),

@@ -31,10 +31,15 @@ node "$SCRIPT_DIR/check-whitespace.mjs" "$VAULT_PUBLISHED" || true
 # --delete keeps the repo a mirror of vault/published — files removed from
 # the vault disappear from the repo on the next sync. Add --dry-run while
 # testing if that scares you.
+#
+# `*.en.md` are repo-only English translations (authored in the repo, not the
+# vault). Exclude them so --delete never wipes them — see
+# scripts/check-translations.mjs and the bilingual-posts notes in CLAUDE.md.
 rsync -av --delete \
 	--exclude '.obsidian/' \
 	--exclude '.trash/' \
 	--exclude '.DS_Store' \
+	--exclude '*.en.md' \
 	"$VAULT_PUBLISHED/" "$DEST/"
 
 echo

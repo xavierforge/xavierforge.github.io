@@ -1,7 +1,7 @@
 ---
 import { render } from "astro:content";
 import type { GetStaticPaths, InferGetStaticPropsType } from "astro";
-import { getAllPosts } from "@/data/post";
+import { getAllPosts, getPostTranslation } from "@/data/post";
 import PostLayout from "@/layouts/BlogPost.astro";
 
 // if you're using an adaptor in SSR mode, getStaticPaths wont work -> https://docs.astro.build/en/guides/routing/#modifying-the-slug-example-for-ssr
@@ -17,8 +17,14 @@ type Props = InferGetStaticPropsType<typeof getStaticPaths>;
 
 const { post } = Astro.props;
 const { Content } = await render(post);
+
+// Optional in-page English translation (`<slug>.en.md`). Rendered into a second
+// language panel; the layout shows a 中文/English toggle only when present.
+const translation = await getPostTranslation(post.id);
+const TranslationContent = translation ? (await render(translation)).Content : null;
 ---
 
-<PostLayout post={post}>
-	<Content />
+<PostLayout post={post} hasTranslation={!!TranslationContent}>
+	<Content slot="body-zh" />
+	{TranslationContent && <TranslationContent slot="body-en" />}
 </PostLayout>
