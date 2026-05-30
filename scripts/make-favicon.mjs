@@ -5,7 +5,7 @@
 // Uses the "forge" (rusted-iron) palette — the same fills the logo shows on
 // hover / on touch devices.
 
-import { readFile, writeFile } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 

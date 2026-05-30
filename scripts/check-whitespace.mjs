@@ -17,8 +17,8 @@
 //
 // Default behaviour is warn-only (exit 0) so it never blocks a sync.
 
-import { readFileSync, statSync, readdirSync } from "node:fs";
-import { join, extname } from "node:path";
+import { readdirSync, readFileSync, statSync } from "node:fs";
+import { extname, join } from "node:path";
 
 const args = process.argv.slice(2);
 const strict = args.includes("--strict");
@@ -26,9 +26,7 @@ const verbose = args.includes("--verbose") || args.includes("-v");
 const paths = args.filter((a) => !a.startsWith("-"));
 
 if (paths.length === 0) {
-	console.error(
-		"usage: check-whitespace.mjs [--strict] [--verbose] <file|dir> ...",
-	);
+	console.error("usage: check-whitespace.mjs [--strict] [--verbose] <file|dir> ...");
 	process.exit(2);
 }
 
@@ -39,8 +37,8 @@ const ZERO_WIDTH = new Set([0x200b, 0x200c, 0x200d, 0x2060, 0xfeff]);
 
 // "Special" spaces — anything that isn't a plain ASCII space or tab.
 const SPECIAL = new Set([
-	0x00a0, 0x1680, 0x2000, 0x2001, 0x2002, 0x2003, 0x2004, 0x2005, 0x2006,
-	0x2007, 0x2008, 0x2009, 0x200a, 0x202f, 0x205f, 0x3000,
+	0x00a0, 0x1680, 0x2000, 0x2001, 0x2002, 0x2003, 0x2004, 0x2005, 0x2006, 0x2007, 0x2008, 0x2009,
+	0x200a, 0x202f, 0x205f, 0x3000,
 ]);
 
 // Thin/hair spaces that are legitimately used to pad dashes in this blog.
@@ -49,6 +47,8 @@ const THIN = new Set([0x2009, 0x200a, 0x202f]);
 // Dashes those thin spaces are allowed to hug.
 const DASH = new Set([0x2013, 0x2014]);
 
+// Keys are Unicode codepoints in hex to mirror the U+ notation in the comments
+// (biome's useSimpleNumberKeys is disabled for this file in biome.json).
 const NAMES = {
 	0x00a0: "NO-BREAK SPACE",
 	0x2002: "EN SPACE",

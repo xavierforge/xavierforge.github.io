@@ -71,10 +71,7 @@ export function rehypeImageFigure() {
 			}
 
 			// A standalone <img> not already inside a figure → wrap it.
-			if (
-				node.tagName === "img" &&
-				!(parent.type === "element" && parent.tagName === "figure")
-			) {
+			if (node.tagName === "img" && !(parent.type === "element" && parent.tagName === "figure")) {
 				parent.children[index] = toFigure(node);
 			}
 			return undefined;

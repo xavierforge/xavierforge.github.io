@@ -1,5 +1,12 @@
 import { visit } from "unist-util-visit";
 
+/** Minimal shape of the mdast `image` nodes this plugin mutates. */
+interface ImageNode {
+	url?: string;
+	alt?: string | null;
+	data?: { hProperties?: Record<string, unknown> };
+}
+
 /**
  * Bridges the user's Obsidian image conventions to Astro:
  *

@@ -13,11 +13,11 @@ import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import rehypeExternalLinks from "rehype-external-links";
 import rehypeKatex from "rehype-katex"; /* render math nodes via KaTeX */
 import rehypeUnwrapImages from "rehype-unwrap-images";
-import { rehypeImageFigure } from "./src/plugins/rehype-image-figure"; /* <img> -> <figure> + <figcaption> */
 // Remark plugins
 import remarkBreaks from "remark-breaks"; /* single newline -> <br>, matching Obsidian */
 import remarkDirective from "remark-directive"; /* Handle ::: directives as nodes */
 import remarkMath from "remark-math"; /* parse $…$ / $$…$$ into math nodes */
+import { rehypeImageFigure } from "./src/plugins/rehype-image-figure"; /* <img> -> <figure> + <figcaption> */
 import { remarkAdmonitions } from "./src/plugins/remark-admonitions"; /* Add admonitions */
 import { remarkGithubCard } from "./src/plugins/remark-github-card";
 import { remarkObsidianCallouts } from "./src/plugins/remark-obsidian-callouts"; /* > [!warning] -> admonition */

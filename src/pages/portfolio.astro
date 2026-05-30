@@ -3,9 +3,7 @@ import { Image } from "astro:assets";
 import { getCollection } from "astro:content";
 import PageLayout from "@/layouts/Base.astro";
 
-const projects = (await getCollection("project")).sort(
-	(a, b) => a.data.order - b.data.order,
-);
+const projects = (await getCollection("project")).sort((a, b) => a.data.order - b.data.order);
 
 const meta = {
 	description: "Selected projects by ChihYing Yen.",
