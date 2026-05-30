@@ -62,7 +62,7 @@ Pasting into Obsidian (from LLM output, web pages, Word) drags in invisible/odd 
 - `src/layouts/BlogPost.astro` — wraps a post with `Masthead` (renders `coverImage` Notion-style on top), TOC, prose body, back-to-top button.
 - `src/pages/index.astro` — homepage. Pinned Posts render with `PinnedPostCard` (thumbnail card grid); the chronological list uses `PostPreview` (text-only row).
 - `src/pages/portfolio.astro` — projects collection, card grid.
-- `src/pages/about.astro` — static About content.
+- `src/pages/about.astro` — static About content. Bilingual: an EN/中文 segmented-control toggle swaps two `prose` panels (`data-lang="en"` / `data-lang="zh"`); a small client `<script>` flips `hidden`, styles the active button, and persists the choice in `localStorage["about-lang"]` (defaults to English, the site lang). The hero photo uses `astro:assets` `<Image>` (don't revert to a raw `<img src={photo.src}>` — that ships the full-size source, ~4.9 MB, unoptimized).
 - `src/site.config.ts` — site title, author, description, URL, date locale, and `menuLinks` for the nav.
 
 ### Comments & visitor stats
