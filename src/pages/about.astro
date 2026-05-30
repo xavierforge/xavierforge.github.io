@@ -19,7 +19,29 @@ const meta = {
 		src={aboutPhoto}
 		width={160}
 	/>
-	<div class="prose prose-sm prose-cactus max-w-none">
+	<div
+		class="mb-8 inline-flex gap-1 rounded-full border border-special-light p-1 text-xs"
+		id="about-lang"
+		role="group"
+		aria-label="Language"
+	>
+		<button
+			class="rounded-full px-3 py-1 font-semibold transition-colors"
+			data-lang-btn="en"
+			type="button"
+		>
+			English
+		</button>
+		<button
+			class="rounded-full px-3 py-1 font-semibold transition-colors"
+			data-lang-btn="zh"
+			type="button"
+		>
+			中文
+		</button>
+	</div>
+
+	<div class="prose prose-sm prose-cactus max-w-none" data-lang="en">
 		<p>
 			I’m a data and machine learning engineer. I believe that crafting a great
 			data solution is much like forging a fine tool: choosing the right
@@ -55,4 +77,67 @@ const meta = {
 			problem on the anvil.
 		</p>
 	</div>
+
+	<div class="prose prose-sm prose-cactus max-w-none" data-lang="zh" hidden>
+		<p>
+			我是一名資料／機器學習工程師。我相信打造一個優秀的資料解決方案就像鍛造一件器物，選對素材、掌握火候、反覆敲打，最終才能淬鍊出真正堪用的成品。<em>Xavier’s
+			Data Forge（鍛造資料）</em>正是這個理念的體現，把原始、雜亂的資料當作待煉的鐵料，以匠人之心反覆錘鍊成可靠的洞察與系統。
+		</p>
+		<p>
+			我在材料與電信領域累積了超過五年的實戰經驗，從以貝氏最佳化（Bayesian
+			Optimization）探索新材料，到運用 YOLO
+			在產線缺陷釀成問題之前即時揪出異常，都是我親手打造的機器學習解決方案。我的 MLOps
+			與資料管線講求穩定與可重現，確保每一次交付到利害關係人手中的，都是經得起檢驗的成果。
+		</p>
+		<p>
+			近年我將重心延伸至 Rust ML 生態系，著有《從 Pythonista 到 Rustacean：資料從業者的第一本
+			Rust 指南》，帶領 Python 出身的資料工作者跨入 Rust 的世界，內容涵蓋 Rust 基礎、PyO3
+			整合，以及 Candle／Burn 的 AI 模型訓練實戰。
+		</p>
+		<p>
+			我也持續投入開源貢獻，最近參與了 <em>zerostack</em>，一個以 Rust
+			寫成、主打極低記憶體佔用的輕量級 coding agent
+			harness。從鐵人賽系列文到開源協作，我始終抱持著終身學習的熱忱，永遠對新的工具與想法保持飢渴，並樂於為每一道難題找到更鋒利的解法。
+		</p>
+	</div>
 </PageLayout>
+
+<script>
+	function initAboutLang() {
+		const group = document.getElementById("about-lang");
+		if (!group) return;
+		const buttons = group.querySelectorAll<HTMLButtonElement>("[data-lang-btn]");
+		const panels = document.querySelectorAll<HTMLElement>("[data-lang]");
+
+		function apply(lang: string) {
+			for (const panel of panels) panel.hidden = panel.dataset.lang !== lang;
+			for (const btn of buttons) {
+				const active = btn.dataset.langBtn === lang;
+				btn.classList.toggle("bg-accent", active);
+				btn.classList.toggle("text-global-bg", active);
+				btn.classList.toggle("text-muted", !active);
+				btn.setAttribute("aria-pressed", String(active));
+			}
+			try {
+				localStorage.setItem("about-lang", lang);
+			} catch {
+				/* ignore storage failures (private mode) */
+			}
+		}
+
+		for (const btn of buttons) {
+			btn.addEventListener("click", () => apply(btn.dataset.langBtn || "en"));
+		}
+
+		let saved = "en";
+		try {
+			saved = localStorage.getItem("about-lang") || "en";
+		} catch {
+			/* ignore */
+		}
+		apply(saved === "zh" ? "zh" : "en");
+	}
+
+	initAboutLang();
+	document.addEventListener("astro:page-load", initAboutLang);
+</script>
