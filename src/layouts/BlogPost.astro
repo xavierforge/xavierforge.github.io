@@ -53,22 +53,8 @@ const readingTime: string = remarkPluginFrontmatter.readingTime;
 				{
 					hasTranslation && (
 						<div data-lang="en" hidden>
-							<aside
-								aria-label="AI-translated"
-								class="admonition mb-8"
-								data-admonition-type="note"
-							>
-								<p class="admonition-title" aria-hidden="true">
-									AI-translated
-								</p>
-								<div class="admonition-content">
-									<p>
-										This article was machine-translated from the original Chinese with AI
-										assistance. If anything reads oddly or looks wrong, please{" "}
-										<a href="#comments">leave a comment</a> and I'll fix it.
-									</p>
-								</div>
-							</aside>
+							{/* The "AI-translated" :::caution disclaimer lives at the top of each
+							    <slug>.en.md body, so it renders inside the prose like other admonitions. */}
 							<slot name="body-en" />
 						</div>
 					)

@@ -14,6 +14,12 @@ draft: false
 sourceHash: abfcf5ce45403696
 ---
 
+:::caution[AI-translated]
+This article was machine-translated from the original Chinese with AI assistance.
+
+If anything reads oddly or looks wrong, please [leave a comment](#comments) and I'll fix it.
+:::
+
 > This is the 30-day completion index and recap of my run at the 2021 iThome Ironman contest. Each entry was originally published on iThome — click through to read the original.
 ## 🏆 This series won an Honorable Mention at the 2021 iThome Ironman
 

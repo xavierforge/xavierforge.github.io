@@ -13,6 +13,13 @@ tags:
 draft: false
 sourceHash: bfb7a331c4f64277
 ---
+
+:::caution[AI-translated]
+This article was machine-translated from the original Chinese with AI assistance.
+
+If anything reads oddly or looks wrong, please [leave a comment](#comments) and I'll fix it.
+:::
+
 > Here's the 30-day completion index and recap of my run at the 2023 iThome Ironman contest. Each entry was originally published on iThome — click through to read the original.
 ## This series later became a book!
 This Ironman series was later heavily revised and expanded into my first book, **"From Pythonista to Rustacean: A Data Practitioner's First Guide to Rust"** (published by GoTop / Deep Wisdom).

@@ -15,6 +15,13 @@ draft: false
 pinned: true
 sourceHash: 64c3a0e2804faa78
 ---
+
+:::caution[AI-translated]
+This article was machine-translated from the original Chinese with AI assistance.
+
+If anything reads oddly or looks wrong, please [leave a comment](#comments) and I'll fix it.
+:::
+
 While migrating my blog from Hexo to Astro recently, I took the chance to overhaul the entire writing-and-publishing experience.
 
 So why move "house"?
