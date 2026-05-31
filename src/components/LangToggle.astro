@@ -4,12 +4,18 @@
 // (sets <html data-lang> + persists to localStorage). The label is driven by the
 // same global data-lang CSS — no JS, no flash — and shows the language you'll
 // switch *to* (an invitation that helps English visitors discover the toggle).
+//
+// Two touches of motion (both gracefully degrade): a press/hover scale on the
+// button (motion-safe only), and a cross-fade of the swapped content via
+// document.startViewTransition() — reusing the site's existing @view-transition
+// root animation. Browsers without the API, or users who prefer reduced motion,
+// just get an instant swap.
 ---
 
 <lang-toggle class="ms-2 sm:ms-4">
 	<button
 		aria-label="Switch language / 切換語言"
-		class="hover:text-accent relative flex h-9 w-9 cursor-pointer items-center justify-center text-sm font-semibold"
+		class="hover:text-accent relative flex h-9 w-9 cursor-pointer items-center justify-center text-sm font-semibold transition-transform duration-150 motion-safe:hover:scale-110 motion-safe:active:scale-90"
 		type="button"
 	>
 		<span aria-hidden="true" data-lang="zh">EN</span>
@@ -23,9 +29,22 @@
 			super();
 			const button = this.querySelector<HTMLButtonElement>("button");
 			button?.addEventListener("click", () => {
-				const current = document.documentElement.getAttribute("data-lang") === "en" ? "en" : "zh";
+				const current =
+					document.documentElement.getAttribute("data-lang") === "en" ? "en" : "zh";
 				const next = current === "en" ? "zh" : "en";
-				document.dispatchEvent(new CustomEvent("lang-change", { detail: { lang: next } }));
+				const apply = () =>
+					document.dispatchEvent(new CustomEvent("lang-change", { detail: { lang: next } }));
+
+				// Cross-fade the swap where supported; otherwise swap instantly.
+				const doc = document as Document & {
+					startViewTransition?: (cb: () => void) => unknown;
+				};
+				const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+				if (!reduceMotion && typeof doc.startViewTransition === "function") {
+					doc.startViewTransition(apply);
+				} else {
+					apply();
+				}
 			});
 		}
 	}
