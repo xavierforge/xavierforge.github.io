@@ -119,3 +119,4 @@ Tailwind v4 via `@tailwindcss/vite`. Theme tokens (colors, spacing) come from Ca
 - Don't edit posts under `src/content/post/` directly — they get clobbered by the next `npm run sync`. Source of truth is the Obsidian vault.
 - Don't put anything important in `legacy/` — it exists only as a historical reference of the old Hexo blog and will eventually be deleted.
 - Don't reintroduce a `gh-pages` branch deploy — the Pages source is set to GitHub Actions.
+- Don't commit posts with `draft: true` — the repo is **public**, so committing the markdown leaks WIP source even though the built site hides drafts (`src/data/post.ts` filters them in PROD). When staging synced content, add finished posts individually rather than `git add`-ing the whole `src/content/post/` tree, and confirm `git status` still shows the draft(s) untracked.
