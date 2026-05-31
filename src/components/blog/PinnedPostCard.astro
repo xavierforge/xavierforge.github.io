@@ -2,6 +2,7 @@
 import { Image } from "astro:assets";
 import type { CollectionEntry } from "astro:content";
 import FormattedDate from "@/components/FormattedDate.astro";
+import { getPostTranslation } from "@/data/post";
 
 interface Props {
 	post: CollectionEntry<"post">;
@@ -9,6 +10,11 @@ interface Props {
 
 const { post } = Astro.props;
 const { coverImage, description, publishDate, title } = post.data;
+
+// English title/description for English readers (site-wide data-lang); unwrapped
+// (always shown) when there's no translation. The fallback letter + image alt
+// stay in the source language — they're not the headline.
+const translation = await getPostTranslation(post.id);
 ---
 
 <a class="group block" href={`/posts/${post.id}/`}>
@@ -36,13 +42,32 @@ const { coverImage, description, publishDate, title } = post.data;
 		<div class="p-4">
 			<h3 class="title text-accent-2 mb-1 line-clamp-2 text-base font-semibold group-hover:underline">
 				{post.data.draft && <span class="text-red-500">(Draft) </span>}
-				{title}
+				{
+					translation ? (
+						<>
+							<span data-lang="zh">{title}</span>
+							<span data-lang="en">{translation.data.title}</span>
+						</>
+					) : (
+						title
+					)
+				}
 			</h3>
 			<FormattedDate class="text-muted text-xs" date={publishDate} />
 			{
-				description && (
-					<p class="text-muted mt-2 line-clamp-2 text-sm">{description}</p>
-				)
+				description &&
+					(translation ? (
+						<>
+							<p class="text-muted mt-2 line-clamp-2 text-sm" data-lang="zh">
+								{description}
+							</p>
+							<p class="text-muted mt-2 line-clamp-2 text-sm" data-lang="en">
+								{translation.data.description}
+							</p>
+						</>
+					) : (
+						<p class="text-muted mt-2 line-clamp-2 text-sm">{description}</p>
+					))
 			}
 		</div>
 	</article>

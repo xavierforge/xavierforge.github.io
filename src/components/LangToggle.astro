@@ -1,93 +1,34 @@
 ---
-// Reusable EN/中文 segmented control. Renders the buttons only; the language
-// panels are siblings the caller provides as `<div data-lang="zh">` /
-// `<div data-lang="en">` inside a shared `<div data-lang-scope>` wrapper. The
-// script below toggles those panels per scope, styles the active button, and
-// remembers the choice in localStorage. Modeled on the About-page toggle.
-interface Props {
-	/** Language shown on first visit when nothing is stored yet. */
-	defaultLang?: "zh" | "en";
-	/** localStorage key the choice is persisted under. */
-	storageKey?: string;
-	class?: string;
-}
-
-const { class: className, defaultLang = "zh", storageKey = "lang" } = Astro.props;
-
-const langs = [
-	{ code: "zh", label: "中文" },
-	{ code: "en", label: "English" },
-] as const;
+// Header control for the site-wide content language. Mirrors ThemeToggle.astro:
+// the button dispatches a `lang-change` event that LangProvider.astro handles
+// (sets <html data-lang> + persists to localStorage). The label is driven by the
+// same global data-lang CSS — no JS, no flash — and shows the language you'll
+// switch *to* (an invitation that helps English visitors discover the toggle).
 ---
 
-<div
-	class:list={[
-		"lang-toggle inline-flex gap-1 rounded-full border border-special-light p-1 text-xs",
-		className,
-	]}
-	data-lang-default={defaultLang}
-	data-lang-storage={storageKey}
-	role="group"
-	aria-label="Language"
->
-	{
-		langs.map((l) => (
-			<button
-				class="rounded-full px-3 py-1 font-semibold text-muted transition-colors"
-				data-lang-btn={l.code}
-				type="button"
-			>
-				{l.label}
-			</button>
-		))
-	}
-</div>
+<lang-toggle class="ms-2 sm:ms-4">
+	<button
+		aria-label="Switch language / 切換語言"
+		class="hover:text-accent relative flex h-9 w-9 cursor-pointer items-center justify-center text-sm font-semibold"
+		type="button"
+	>
+		<span aria-hidden="true" data-lang="zh">EN</span>
+		<span aria-hidden="true" data-lang="en">中</span>
+	</button>
+</lang-toggle>
 
 <script>
-	function initLangToggles() {
-		const scopes = document.querySelectorAll<HTMLElement>("[data-lang-scope]");
-		for (const scope of scopes) {
-			const toggle = scope.querySelector<HTMLElement>(".lang-toggle");
-			if (!toggle || toggle.dataset.langInit) continue;
-			toggle.dataset.langInit = "1";
-
-			const buttons = toggle.querySelectorAll<HTMLButtonElement>("[data-lang-btn]");
-			const panels = scope.querySelectorAll<HTMLElement>("[data-lang]");
-			const storageKey = toggle.dataset.langStorage || "lang";
-			const fallback = toggle.dataset.langDefault || "zh";
-			const available = new Set(Array.from(panels, (p) => p.dataset.lang));
-
-			const apply = (requested: string) => {
-				const lang = available.has(requested) ? requested : fallback;
-				for (const panel of panels) panel.hidden = panel.dataset.lang !== lang;
-				for (const btn of buttons) {
-					const active = btn.dataset.langBtn === lang;
-					btn.classList.toggle("bg-accent", active);
-					btn.classList.toggle("text-global-bg", active);
-					btn.classList.toggle("text-muted", !active);
-					btn.setAttribute("aria-pressed", String(active));
-				}
-				try {
-					localStorage.setItem(storageKey, lang);
-				} catch {
-					/* ignore storage failures (private mode) */
-				}
-			};
-
-			for (const btn of buttons) {
-				btn.addEventListener("click", () => apply(btn.dataset.langBtn || fallback));
-			}
-
-			let saved = fallback;
-			try {
-				saved = localStorage.getItem(storageKey) || fallback;
-			} catch {
-				/* ignore */
-			}
-			apply(saved);
+	class LangToggle extends HTMLElement {
+		constructor() {
+			super();
+			const button = this.querySelector<HTMLButtonElement>("button");
+			button?.addEventListener("click", () => {
+				const current = document.documentElement.getAttribute("data-lang") === "en" ? "en" : "zh";
+				const next = current === "en" ? "zh" : "en";
+				document.dispatchEvent(new CustomEvent("lang-change", { detail: { lang: next } }));
+			});
 		}
 	}
 
-	initLangToggles();
-	document.addEventListener("astro:page-load", initLangToggles);
+	customElements.define("lang-toggle", LangToggle);
 </script>

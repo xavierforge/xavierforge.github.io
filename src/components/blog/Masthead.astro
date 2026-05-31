@@ -3,16 +3,18 @@ import { Image } from "astro:assets";
 import type { CollectionEntry } from "astro:content";
 import FormattedDate from "@/components/FormattedDate.astro";
 import GoatCounter from "@/components/GoatCounter.astro";
+import { getPostTranslation } from "@/data/post";
 
 interface Props {
 	content: CollectionEntry<"post">;
 	readingTime: string;
 }
 
-const {
-	content: { data },
-	readingTime,
-} = Astro.props;
+const { content, readingTime } = Astro.props;
+const { data } = content;
+
+// English headline for English readers (site-wide data-lang); unwrapped when untranslated.
+const translation = await getPostTranslation(content.id);
 
 const dateTimeOptions: Intl.DateTimeFormatOptions = {
 	month: "long",
@@ -34,7 +36,16 @@ const dateTimeOptions: Intl.DateTimeFormatOptions = {
 }
 {data.draft ? <span class="text-base text-red-500">(Draft)</span> : null}
 <h1 class="title mb-3 text-3xl sm:text-4xl">
-	{data.title}
+	{
+		translation ? (
+			<>
+				<span data-lang="zh">{data.title}</span>
+				<span data-lang="en">{translation.data.title}</span>
+			</>
+		) : (
+			data.title
+		)
+	}
 </h1>
 <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
 	<p class="font-semibold">

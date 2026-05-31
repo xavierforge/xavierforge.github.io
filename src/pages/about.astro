@@ -20,28 +20,7 @@ const meta = {
 		src={aboutPhoto}
 		width={160}
 	/>
-	<div
-		class="mb-8 inline-flex gap-1 rounded-full border border-special-light p-1 text-xs"
-		id="about-lang"
-		role="group"
-		aria-label="Language"
-	>
-		<button
-			class="rounded-full px-3 py-1 font-semibold transition-colors"
-			data-lang-btn="en"
-			type="button"
-		>
-			English
-		</button>
-		<button
-			class="rounded-full px-3 py-1 font-semibold transition-colors"
-			data-lang-btn="zh"
-			type="button"
-		>
-			中文
-		</button>
-	</div>
-
+	{/* Language follows the site-wide header toggle (<html data-lang>); global.css shows one panel. */}
 	<div class="prose prose-sm prose-cactus max-w-none" data-lang="en">
 		<p>
 			I’m a data and machine learning engineer. I believe that crafting a great
@@ -79,7 +58,7 @@ const meta = {
 		</p>
 	</div>
 
-	<div class="prose prose-sm prose-cactus max-w-none" data-lang="zh" hidden>
+	<div class="prose prose-sm prose-cactus max-w-none" data-lang="zh">
 		<p>
 			我是一名資料／機器學習工程師。我相信打造一個優秀的資料解決方案就像鍛造一件器物，選對素材、掌握火候、反覆敲打，最終才能淬鍊出真正堪用的成品。<em>Xavier’s
 			Data Forge（鍛造資料）</em>正是這個理念的體現，把原始、雜亂的資料當作待煉的鐵料，以匠人之心反覆錘鍊成可靠的洞察與系統。
@@ -102,43 +81,3 @@ const meta = {
 		</p>
 	</div>
 </PageLayout>
-
-<script>
-	function initAboutLang() {
-		const group = document.getElementById("about-lang");
-		if (!group) return;
-		const buttons = group.querySelectorAll<HTMLButtonElement>("[data-lang-btn]");
-		const panels = document.querySelectorAll<HTMLElement>("[data-lang]");
-
-		function apply(lang: string) {
-			for (const panel of panels) panel.hidden = panel.dataset.lang !== lang;
-			for (const btn of buttons) {
-				const active = btn.dataset.langBtn === lang;
-				btn.classList.toggle("bg-accent", active);
-				btn.classList.toggle("text-global-bg", active);
-				btn.classList.toggle("text-muted", !active);
-				btn.setAttribute("aria-pressed", String(active));
-			}
-			try {
-				localStorage.setItem("about-lang", lang);
-			} catch {
-				/* ignore storage failures (private mode) */
-			}
-		}
-
-		for (const btn of buttons) {
-			btn.addEventListener("click", () => apply(btn.dataset.langBtn || "en"));
-		}
-
-		let saved = "en";
-		try {
-			saved = localStorage.getItem("about-lang") || "en";
-		} catch {
-			/* ignore */
-		}
-		apply(saved === "zh" ? "zh" : "en");
-	}
-
-	initAboutLang();
-	document.addEventListener("astro:page-load", initAboutLang);
-</script>

@@ -5,7 +5,6 @@ import Masthead from "@/components/blog/Masthead.astro";
 import TOC from "@/components/blog/TOC.astro";
 import WebMentions from "@/components/blog/webmentions/index.astro";
 import Comments from "@/components/Comments.astro";
-import LangToggle from "@/components/LangToggle.astro";
 
 import BaseLayout from "./Base.astro";
 
@@ -40,23 +39,24 @@ const readingTime: string = remarkPluginFrontmatter.readingTime;
 			{!!headings.length && <TOC headings={headings} />}
 			<div
 				class="prose w-full max-w-none flex-1 prose-headings:font-semibold prose-headings:text-accent-2 prose-headings:before:absolute prose-headings:before:-ms-4 prose-headings:before:text-muted prose-headings:hover:before:text-accent sm:prose-headings:before:content-['#'] sm:prose-th:before:content-none"
-				data-lang-scope
 			>
 				{
-					hasTranslation && (
-						<LangToggle class="not-prose mb-8" defaultLang="zh" storageKey="post-lang" />
-					)
-				}
-				<div data-lang="zh">
-					<slot name="body-zh" />
-				</div>
-				{
-					hasTranslation && (
-						<div data-lang="en" hidden>
-							{/* The "AI-translated" :::caution disclaimer lives at the top of each
-							    <slug>.en.md body, so it renders inside the prose like other admonitions. */}
-							<slot name="body-en" />
-						</div>
+					hasTranslation ? (
+						<>
+							{/* Site-wide <html data-lang> (header LangToggle) shows one panel; global.css
+							    hides the other. The "AI-translated" :::caution disclaimer lives at the top
+							    of each <slug>.en.md body, so it renders inside the prose. */}
+							<div data-lang="zh">
+								<slot name="body-zh" />
+							</div>
+							<div data-lang="en">
+								<slot name="body-en" />
+							</div>
+						</>
+					) : (
+						/* No translation: render unwrapped so it always shows (an EN visitor must
+						   not get a blank article from the data-lang hide rule). */
+						<slot name="body-zh" />
 					)
 				}
 				<WebMentions />

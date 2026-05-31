@@ -1,0 +1,31 @@
+{/* Inlined to avoid FOUC. Parser-blocking, mirrors ThemeProvider.astro but for
+    content language. Sets <html data-lang="zh|en">; global.css hides the inactive
+    language. First visit defaults from the browser language, then the user's choice
+    (persisted in localStorage) wins. */}
+<script is:inline>
+	function getLangPref() {
+		const stored = typeof localStorage !== "undefined" && localStorage.getItem("lang");
+		if (stored === "zh" || stored === "en") return stored;
+		const nav = (typeof navigator !== "undefined" && navigator.language) || "";
+		return nav.toLowerCase().startsWith("zh") ? "zh" : "en";
+	}
+
+	function setLang(newLang) {
+		if (newLang !== "zh" && newLang !== "en") return;
+		document.documentElement.setAttribute("data-lang", newLang);
+		if (typeof localStorage !== "undefined") {
+			localStorage.setItem("lang", newLang);
+		}
+	}
+
+	// initial setup (runs before first paint → no flash of the wrong language)
+	setLang(getLangPref());
+
+	// browser restored the page from bfcache
+	window.addEventListener("pageshow", (e) => {
+		if (e.persisted) setLang(getLangPref());
+	});
+
+	// fired by src/components/LangToggle.astro
+	document.addEventListener("lang-change", (e) => setLang(e.detail.lang));
+</script>
