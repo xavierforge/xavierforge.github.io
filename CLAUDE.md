@@ -9,7 +9,7 @@ Personal blog at `https://xavierforge.dev/`, built on Astro 6 with a forked copy
 ## Commands
 
 - `npm install` — install dependencies. Rebuilds `sharp` via the `postinstall` hook.
-- `npm run dev` — local dev server (`astro dev`).
+- `npm run dev` — local dev server (`astro dev`). **Caveat:** after changing markdown rendering (remark/rehype plugins in `astro.config.ts`, or what they import like `src/site.config.ts`), `astro dev` often keeps serving the OLD rendered HTML even after clearing `node_modules/.astro` + `node_modules/.vite` and restarting — a wedged `@pagefind/component-ui` dep re-optimization freezes the SSR render. Treat `npm run build` + grepping `dist/**/index.html` as the source of truth for whether a rendering change works. For a clean dev preview: `pkill -9 -f "astro dev"`, `rm -rf node_modules/.astro node_modules/.vite`, restart on a fresh port (`npm run dev -- --port 4399`). (`lsof -ti :4321` may also list the browser's client connection, not a zombie server — check the command name.)
 - `npm run sync` — `rsync` the Obsidian vault's `published/` folder into `src/content/post/`. Edit `scripts/sync.sh` (or set `VAULT_PUBLISHED`) before first use. Runs the whitespace check (below) against the vault source first, warn-only.
 - `npm run check:whitespace` — scan `src/content/post/` for invisible/odd whitespace (see "Source markdown hygiene"). Pass flags through npm: `-- --verbose` lists hidden info findings, `-- --strict` exits non-zero on any issue.
 - `npm run build` — `astro build` → `dist/`, then `pagefind` indexes the site into `dist/pagefind/`.
@@ -32,7 +32,8 @@ One-time setup: GitHub repo → Settings → Pages → Source must be set to "Gi
 
 Three first-party collections, all defined in `src/content.config.ts` via the `glob` loader on the v5 Content Layer API:
 
-- `post` — blog posts under `src/content/post/`. Schema requires `title`, `description`, `publishDate`; supports `coverImage: { src, alt }` (relative path) for the hero image at the top of the post and the homepage Pinned Posts cards. Other fields: `tags`, `draft`, `pinned`, `updatedDate`, `ogImage`. Posts are normally synced from Obsidian — don't hand-edit them in the repo, edit in Obsidian and re-run `npm run sync`.
+- `post` — blog posts under `src/content/post/`. Schema requires `title` (≤ 60 chars), `description`, `publishDate`; supports `coverImage: { src, alt }` (relative path) for the hero image at the top of the post and the homepage Pinned Posts cards. Other fields: `tags`, `draft`, `pinned`, `updatedDate`, `ogImage`. Posts are normally synced from Obsidian — don't hand-edit them in the repo, edit in Obsidian and re-run `npm run sync`.
+  - **Cover image spec:** the hero (`src/components/blog/Masthead.astro`) renders full-width at a fixed **16:9** ratio (`aspect-video … object-cover`), so non-16:9 art gets cropped. Author covers at **16:9, ideally 1920×1080** (min ~1600×900 — the content column is `max-w-5xl` ≈ 960px, so 2× stays sharp on HiDPI). PNG or WebP both fine; Astro re-encodes to WebP and emits a srcset via the `image()` schema, so don't hardcode width/height in Masthead.
 - `project` — portfolio entries under `src/content/project/`, one `.md` per project. Schema: `title`, `description`, `link` (URL), optional `coverImage`, `order`. Rendered by `src/pages/portfolio.astro`.
 - `tag` — optional per-tag metadata files under `src/content/tag/` (currently empty); used by Cactus's tag detail pages. Add a `<tagname>.md` here if you want a description for a tag page.
 
@@ -98,6 +99,16 @@ site builds clean with empty values.
   subdomain in `analyticsConfig.code` (`https://<code>.goatcounter.com`), and in GoatCounter
   Settings → *Site* enable **"Allow adding visitor counts on your website"** (needed for the
   on-page counters' CORS). Counters stay hidden until data exists / the endpoint responds.
+  Two non-obvious `/counter/` quirks that broke per-post views (both handled in
+  `GoatCounter.astro`, but worth knowing when debugging "counter shows nothing"):
+  1. **Trailing-slash normalization** — GoatCounter stores paths *without* a trailing slash
+     (`/posts/foo`), but the deployed pages + tracking pixel use `/posts/foo/`. Querying the
+     raw `location.pathname` 404s, so the component strips the trailing slash (keeping root `/`).
+  2. **The public `/counter/` endpoint updates on a periodic cycle (~hourly), not real-time** —
+     the *dashboard* is real-time, so a freshly recorded path (labelled "(new)") can 404 from
+     `/counter/` for a while even though the data exists. When debugging, compare the dashboard's
+     stored path string against what the component queries, and allow for the endpoint's lag
+     before concluding the hit wasn't recorded.
 
 ### Styling
 
