@@ -1,4 +1,5 @@
-import type { APIContext, InferGetStaticPropsType } from "astro";
+import fs from "node:fs";
+import type { APIContext, ImageMetadata, InferGetStaticPropsType } from "astro";
 import satori, { type SatoriOptions } from "satori";
 import sharp from "sharp";
 import RobotoMonoBold from "@/assets/roboto-mono-700.ttf";
@@ -31,25 +32,41 @@ const ogOptions: SatoriOptions = {
 
 type Props = InferGetStaticPropsType<typeof getStaticPaths>;
 
-export async function GET(context: APIContext) {
-	const { pubDate, title } = context.props as Props;
+// Render the post's cover, cropped to the 1200×630 OG canvas, as a PNG.
+async function renderCover(coverPath: string): Promise<Buffer> {
+	return sharp(coverPath)
+		.resize(1200, 630, { fit: "cover", position: "centre" })
+		.png({ compressionLevel: 9 })
+		.toBuffer();
+}
 
-	// check the og-image cache
-	let pngBuffer = readCache(title, pubDate);
+// The Cactus title-card fallback (Satori → SVG → PNG) for cover-less posts.
+async function renderTitleCard(title: string, pubDate: Date): Promise<Buffer> {
+	const postDate = getFormattedDate(pubDate, {
+		month: "long",
+		weekday: "long",
+	});
+	// Only the (bold) title can contain CJK; load a matching glyph subset.
+	const cjkFonts = await loadCJKFonts(title, 700);
+	const svg = await satori(ogMarkup(title, postDate), {
+		...ogOptions,
+		fonts: [...ogOptions.fonts, ...cjkFonts],
+	});
+	return sharp(Buffer.from(svg)).png().toBuffer();
+}
+
+export async function GET(context: APIContext) {
+	const { coverPath, pubDate, title } = context.props as Props;
+
+	// A cover-based image gets a variant key (path + mtime) so it never collides
+	// with the title-card cache and re-renders when the cover file changes.
+	const variant = coverPath ? `cover:${coverPath}:${fs.statSync(coverPath).mtimeMs}` : "";
+
+	let pngBuffer = readCache(title, pubDate, variant);
 	if (!pngBuffer) {
 		console.info(`Generating new OG image for: ${title}`);
-		const postDate = getFormattedDate(pubDate, {
-			month: "long",
-			weekday: "long",
-		});
-		// Only the (bold) title can contain CJK; load a matching glyph subset.
-		const cjkFonts = await loadCJKFonts(title, 700);
-		const svg = await satori(ogMarkup(title, postDate), {
-			...ogOptions,
-			fonts: [...ogOptions.fonts, ...cjkFonts],
-		});
-		pngBuffer = await sharp(Buffer.from(svg)).png().toBuffer();
-		writeToCache(title, pubDate, pngBuffer);
+		pngBuffer = coverPath ? await renderCover(coverPath) : await renderTitleCard(title, pubDate);
+		writeToCache(title, pubDate, pngBuffer, variant);
 	}
 
 	return new Response(new Uint8Array(pngBuffer), {
@@ -68,6 +85,10 @@ export async function getStaticPaths() {
 		.map((post) => ({
 			params: { slug: post.id },
 			props: {
+				// `image()` populates `fsPath` (the source file on disk) at runtime;
+				// it's omitted from the public ImageMetadata type, hence the cast.
+				coverPath: (post.data.coverImage?.src as (ImageMetadata & { fsPath?: string }) | undefined)
+					?.fsPath,
 				pubDate: post.data.updatedDate ?? post.data.publishDate,
 				title: post.data.title,
 			},
