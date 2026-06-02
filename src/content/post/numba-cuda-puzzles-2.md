@@ -14,7 +14,7 @@ tags:
   - 深度學習
 draft: false
 ---
-> 本系列文介紹如何使用 Numba 來進行 CUDA 編寫，這是系列文的第二篇，前面的內容請參考: [用 Numba 學 CUDA! 從入門到精通 (上)](https://xavierforge.dev/posts/numba-cuda-puzzles-1/)
+> 本系列文介紹如何使用 Numba 來進行 CUDA 編寫，這是系列文的第二篇，前面的內容請參考: [用 Numba 學 CUDA! 從入門到精通 (上)](/posts/numba-cuda-puzzles-1/)
 > 2026/05/30：因為上集都大改了，所以秉持著不能虎頭蛇尾的原則，下集也是 2026 超級重製版！甚至兩張封面圖都用 AI 改成高畫質了～
 > 還重畫了一些示意圖，一錯錯兩年，你看悲不悲傷 🥲
 ## GPU 謎題

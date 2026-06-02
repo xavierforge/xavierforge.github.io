@@ -15,7 +15,7 @@ tags:
 draft: false
 ---
 > 一起玩遊戲學習如何寫驅動 99% 深度學習的演算法 CUDA 的 Kernel 吧 🤩
-> 本系列文將介紹如何使用 Numba 來進行 CUDA 編寫，因為篇幅關係，本文習題詳解只有到第 8 題，後續的詳解請參考：[用 Numba 學 CUDA! 從入門到精通 (下)](https://xavierforge.dev/posts/numba-cuda-puzzles-2/)
+> 本系列文將介紹如何使用 Numba 來進行 CUDA 編寫，因為篇幅關係，本文習題詳解只有到第 8 題，後續的詳解請參考：[用 Numba 學 CUDA! 從入門到精通 (下)](/posts/numba-cuda-puzzles-2/)
 > 2026/05/29：本來只是想從 Medium 搬過來，但發現實在有太多地方是第一版沒有說清楚的了，所以進行了大翻新，還加了兩張梗圖哦！！
 ## 前言
 在學習深度學習的過程中，一定會常常看到 CUDA 這個名詞出現在各種環境設定與安裝的教學中，可以說是從旅程一開始就陪在我們身邊，但就像空氣一樣，即使知道它很重要，我們日常並不會深刻地感覺到它的存在。
@@ -529,7 +529,7 @@ def shared_test(cuda):
 > 這題的重點其實只在展示共享記憶體和 `syncthreads` 怎麼用，真要解這題的話，直接 `out[i] = a[i] + 10` 就過了，根本用不上共享記憶體。
 > 如果對 `syncthreads` 更進階的用法有興趣，可以先去研究官方矩陣乘法的範例 [`fast_matmul`](https://numba.pydata.org/numba-doc/latest/cuda/examples.html#matrix-multiplication)，那邊才是共享記憶體真正能展現威力的地方。
 
-因為篇幅關係 (再寫下去就太長啦)，本文習題詳解先到此告一段落，後續的詳解請參考：[用 Numba 學 CUDA! 從入門到精通 (下)](https://xavierforge.dev/posts/numba-cuda-puzzles-2/)
+因為篇幅關係 (再寫下去就太長啦)，本文習題詳解先到此告一段落，後續的詳解請參考：[用 Numba 學 CUDA! 從入門到精通 (下)](/posts/numba-cuda-puzzles-2/)
 
 那我們就到下一篇見啦～
 ## 參考資料
