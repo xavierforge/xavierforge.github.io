@@ -45,7 +45,17 @@ export default defineConfig({
 	integrations: [
 		expressiveCode(expressiveCodeOptions),
 		icon(),
-		sitemap(),
+		// i18n: emit <xhtml:link rel="alternate" hreflang> per URL. The integration
+		// groups pages by their path with the locale prefix stripped, so a zh page
+		// (/posts/foo/) and its English mirror (/en/posts/foo/) cross-reference each
+		// other — and a single-language post gets no dangling alternate. The default
+		// locale (zh-Hant) has no prefix; paths matching no locale key fall to it.
+		sitemap({
+			i18n: {
+				defaultLocale: "zh-Hant",
+				locales: { "zh-Hant": "zh-Hant", en: "en" },
+			},
+		}),
 		mdx(),
 		robotsTxt(),
 		webmanifest({
