@@ -13,7 +13,15 @@ interface Props {
 }
 
 const {
-	meta: { articleDate, description = siteConfig.description, ogImage, title, alternates, rssHref },
+	meta: {
+		articleDate,
+		description = siteConfig.description,
+		ogImage,
+		title,
+		alternates,
+		rssHref,
+		jsonLd,
+	},
 } = Astro.props;
 
 const locale = Astro.props.meta.locale ?? DEFAULT_LOCALE;
@@ -42,6 +50,7 @@ const goatCounterUrl =
 			locale={locale}
 			alternates={alternates}
 			rssHref={rssHref}
+			jsonLd={jsonLd}
 		/>
 		<ThemeProvider />
 	</head>

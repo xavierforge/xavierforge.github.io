@@ -22,7 +22,7 @@ This article was machine-translated from the original Chinese with AI assistance
 If anything reads oddly or looks wrong, please [leave a comment](#comments) and I'll fix it.
 :::
 
-> This series introduces how to write CUDA using Numba. This is the second installment; for the earlier content, please see: [Learn CUDA with Numba! From Zero to Hero (Part 1)](https://xavierforge.dev/posts/numba-cuda-puzzles-1/)
+> This series introduces how to write CUDA using Numba. This is the second installment; for the earlier content, please see: [Learn CUDA with Numba! From Zero to Hero (Part 1)](/en/posts/numba-cuda-puzzles-1/)
 > 2026/05/30: Since Part 1 got a major overhaul, in keeping with the principle of not leaving things half-finished, Part 2 is also a 2026 super-remastered edition! I even used AI to upgrade both cover images to high resolution.
 > I also redrew some of the diagrams. Two years of the same mistake, isn't that just heartbreaking 🥲
 ## GPU Puzzles

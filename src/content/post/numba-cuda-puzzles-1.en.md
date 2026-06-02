@@ -23,7 +23,7 @@ If anything reads oddly or looks wrong, please [leave a comment](#comments) and 
 :::
 
 > Let's play a game and learn how to write CUDA kernels, the algorithms that power 99% of deep learning 🤩
-> This series introduces how to use Numba for CUDA programming. Due to length constraints, this article's puzzle walkthroughs only go up to Puzzle 8; for the rest, please see: [Learn CUDA with Numba! From Zero to Hero (Part 2)](https://xavierforge.dev/posts/numba-cuda-puzzles-2/)
+> This series introduces how to use Numba for CUDA programming. Due to length constraints, this article's puzzle walkthroughs only go up to Puzzle 8; for the rest, please see: [Learn CUDA with Numba! From Zero to Hero (Part 2)](/en/posts/numba-cuda-puzzles-2/)
 > 2026/05/29: I originally just wanted to migrate this over from Medium, but I found there were so many places the first version didn't explain clearly, so I gave it a major overhaul — and even added two memes!!
 ## Preface
 While learning deep learning, you'll surely keep seeing the term CUDA pop up in all sorts of environment-setup and installation tutorials. You could say it's been by our side from the very start of the journey, but much like air, even though we know it's important, we don't deeply feel its presence day to day.
@@ -536,7 +536,7 @@ From the visualization, you can see that the data is first moved into shared mem
 > The point of this puzzle is really just to demonstrate how to use shared memory and `syncthreads`. To actually solve it, `out[i] = a[i] + 10` directly would pass — you don't need shared memory at all.
 > If you're interested in more advanced uses of `syncthreads`, you can start by studying the official matrix multiplication example [`fast_matmul`](https://numba.pydata.org/numba-doc/latest/cuda/examples.html#matrix-multiplication) — that's where shared memory can truly show its power.
 
-Due to length constraints (any more and it'd get too long!), this article's puzzle walkthroughs come to a pause here. For the rest, please see: [Learn CUDA with Numba! From Zero to Hero (Part 2)](https://xavierforge.dev/posts/numba-cuda-puzzles-2/)
+Due to length constraints (any more and it'd get too long!), this article's puzzle walkthroughs come to a pause here. For the rest, please see: [Learn CUDA with Numba! From Zero to Hero (Part 2)](/en/posts/numba-cuda-puzzles-2/)
 
 See you in the next one~
 ## References

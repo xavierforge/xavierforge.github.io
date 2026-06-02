@@ -5,7 +5,16 @@ import Masthead from "@/components/blog/Masthead.astro";
 import TOC from "@/components/blog/TOC.astro";
 import WebMentions from "@/components/blog/webmentions/index.astro";
 import Comments from "@/components/Comments.astro";
-import { type Alternate, canonicalSlug, DEFAULT_LOCALE, type Locale, rssPath } from "@/i18n";
+import {
+	type Alternate,
+	canonicalSlug,
+	DEFAULT_LOCALE,
+	LOCALES,
+	type Locale,
+	localizePath,
+	rssPath,
+} from "@/i18n";
+import { siteConfig } from "@/site.config";
 
 import BaseLayout from "./Base.astro";
 
@@ -29,6 +38,29 @@ const readingTime: string = remarkPluginFrontmatter.readingTime;
 // Shared Giscus thread across both languages: the canonical slug (`foo`) is the
 // same for the zh post (`foo`) and its English companion (`foo.en`).
 const commentTerm = canonicalSlug(post.id);
+
+// schema.org Article structured data (P4) — rich-result eligibility. `inLanguage`
+// tracks the page locale; image/author/publisher are resolved to absolute URLs.
+const jsonLd = {
+	"@context": "https://schema.org",
+	"@type": "Article",
+	headline: title,
+	description,
+	image: new URL(socialImage, Astro.site).href,
+	datePublished: publishDate.toISOString(),
+	dateModified: (updatedDate ?? publishDate).toISOString(),
+	author: {
+		"@type": "Person",
+		name: siteConfig.author,
+		url: new URL(localizePath("/about/", locale), Astro.site).href,
+	},
+	publisher: {
+		"@type": "Organization",
+		name: siteConfig.title,
+		logo: { "@type": "ImageObject", url: new URL("/logo.png", Astro.site).href },
+	},
+	inLanguage: LOCALES[locale].htmlLang,
+};
 ---
 
 <BaseLayout
@@ -40,6 +72,7 @@ const commentTerm = canonicalSlug(post.id);
 		locale,
 		alternates,
 		rssHref: rssPath(locale),
+		jsonLd,
 	}}
 >
 	<article class="grow break-words" data-pagefind-body>

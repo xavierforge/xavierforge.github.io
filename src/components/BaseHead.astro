@@ -7,7 +7,7 @@ import "@/styles/global.css";
 
 type Props = SiteMeta;
 
-const { articleDate, description, ogImage, title, alternates, rssHref } = Astro.props;
+const { articleDate, description, ogImage, title, alternates, rssHref, jsonLd } = Astro.props;
 
 const locale = Astro.props.locale ?? DEFAULT_LOCALE;
 
@@ -90,6 +90,17 @@ const alternateLinks = (alternates ?? []).map((alt) => ({
 <meta content={title} property="twitter:title" />
 <meta content={description} property="twitter:description" />
 <meta content={socialImageURL} property="twitter:image" />
+
+{/* Structured data (schema.org JSON-LD), e.g. Article on post pages */}
+{
+	jsonLd && (
+		<script
+			type="application/ld+json"
+			is:inline
+			set:html={JSON.stringify(jsonLd).replace(/</g, "\\u003c")}
+		/>
+	)
+}
 
 {/* Sitemap */}
 <link href="/sitemap-index.xml" rel="sitemap" />

@@ -88,7 +88,11 @@ So the `.en.md` suffix means "translation of `<slug>.md`"; an English-only **ori
 
 ### SEO plan status
 
-Shipped from `~/Downloads/xavierforge-seo-plan.md`: **P0** i18n routing, **P1** metadata consistency, **P3** conditional hreflang, **P2** sitemap hreflang. Still open: **P4** JSON-LD `Article` (`inLanguage` per locale), **P5** robots.txt/404/internal-link/image-alt audit.
+All of `~/Downloads/xavierforge-seo-plan.md` is shipped: **P0** i18n routing, **P1** metadata consistency, **P2** sitemap hreflang, **P3** conditional hreflang, **P4** JSON-LD `Article`, **P5** robots/404/links/alt.
+
+- **P4 — JSON-LD:** `BlogPost.astro` builds a schema.org `Article` (headline/description/image/dates/author/publisher/`inLanguage`) and passes it via `SiteMeta.jsonLd`; `BaseHead.astro` emits it as `<script type="application/ld+json">` (escaping `<`). Post pages only — listings/home don't carry it.
+- **P5 — robots.txt** is already correct (the `astro-robots-txt` integration emits `Sitemap:` automatically); **404** is a single bilingual page with nav links (GitHub Pages can't serve a per-locale 404).
+- **Remaining content fixes (do in the Obsidian vault, not the repo):** a few Chinese posts link to siblings with absolute `https://xavierforge.dev/posts/...` URLs (prefer root-relative `/posts/...` so a domain change doesn't break them), and `numba-cuda-puzzles-1` has one image with an empty `![]()` alt (line ~377) that wants a description. The English `.en.md` cross-links were already fixed to root-relative `/en/posts/...`.
 
 ### Layout split
 

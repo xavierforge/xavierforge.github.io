@@ -47,6 +47,8 @@ export interface SiteMeta {
 	alternates?: import("@/i18n").Alternate[] | undefined;
 	/** RSS feed for this locale, e.g. "/rss.xml" | "/en/rss.xml". */
 	rssHref?: string | undefined;
+	/** schema.org JSON-LD object (e.g. an Article) emitted in <head>. */
+	jsonLd?: Record<string, unknown> | undefined;
 }
 
 /** Webmentions */
