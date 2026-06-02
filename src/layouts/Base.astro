@@ -1,10 +1,10 @@
 ---
 import BaseHead from "@/components/BaseHead.astro";
-import LangProvider from "@/components/LangProvider.astro";
 import Footer from "@/components/layout/Footer.astro";
 import Header from "@/components/layout/Header.astro";
 import SkipLink from "@/components/SkipLink.astro";
 import ThemeProvider from "@/components/ThemeProvider.astro";
+import { DEFAULT_LOCALE, LOCALES, localizePath } from "@/i18n";
 import { analyticsConfig, siteConfig } from "@/site.config";
 import type { SiteMeta } from "@/types";
 
@@ -13,8 +13,17 @@ interface Props {
 }
 
 const {
-	meta: { articleDate, description = siteConfig.description, ogImage, title },
+	meta: { articleDate, description = siteConfig.description, ogImage, title, alternates, rssHref },
 } = Astro.props;
+
+const locale = Astro.props.meta.locale ?? DEFAULT_LOCALE;
+
+// Language-toggle target: the alternate-locale URL for this page if it exists,
+// else the other locale's home. Reads the hreflang set we already build for SEO.
+const otherLocale = locale === "en" ? "zh-Hant" : "en";
+const otherHreflang = otherLocale === "en" ? "en" : "zh-Hant";
+const langToggleHref =
+	alternates?.find((a) => a.hreflang === otherHreflang)?.href ?? localizePath("/", otherLocale);
 
 // Only count real visitors: load GoatCounter on the deployed site, not in dev/preview.
 const goatCounterUrl =
@@ -23,17 +32,24 @@ const goatCounterUrl =
 		: null;
 ---
 
-<html class="scroll-smooth" lang={siteConfig.lang} data-lang="zh">
+<html class="scroll-smooth" lang={LOCALES[locale].htmlLang}>
 	<head>
-		<BaseHead articleDate={articleDate} description={description} ogImage={ogImage} title={title} />
+		<BaseHead
+			articleDate={articleDate}
+			description={description}
+			ogImage={ogImage}
+			title={title}
+			locale={locale}
+			alternates={alternates}
+			rssHref={rssHref}
+		/>
 		<ThemeProvider />
-		<LangProvider />
 	</head>
 	<body
 		class="bg-global-bg text-global-text mx-auto flex min-h-screen max-w-5xl flex-col px-4 pt-16 font-mono text-sm font-normal tracking-wide antialiased sm:px-8"
 	>
 		<SkipLink />
-		<Header />
+		<Header locale={locale} langToggleHref={langToggleHref} />
 		<main id="main">
 			<slot />
 		</main>

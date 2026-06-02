@@ -4,13 +4,14 @@ import type { GetStaticPaths, InferGetStaticPropsType } from "astro";
 import { Icon } from "astro-icon/components";
 import PostPreview from "@/components/blog/PostPreview.astro";
 import Pagination from "@/components/Paginator.astro";
-import { getAllPosts, getTagMeta, getUniqueTags } from "@/data/post";
+import { getPostsByLocale, getTagMeta, getUniqueTags } from "@/data/post";
 import { buildAlternates, localizePath } from "@/i18n";
 import PageLayout from "@/layouts/Base.astro";
 import { collectionDateSort } from "@/utils/date";
 
+// English mirror of /tags/[tag]/[...page].
 export const getStaticPaths = (async ({ paginate }) => {
-	const allPosts = await getAllPosts();
+	const allPosts = await getPostsByLocale("en");
 	const sortedPosts = allPosts.sort(collectionDateSort);
 	const uniqueTags = getUniqueTags(sortedPosts);
 
@@ -34,7 +35,7 @@ const TagContent = tagMeta ? (await render(tagMeta)).Content : null;
 const meta = {
 	description: tagMeta?.data.description ?? `View all posts with the tag - ${tag}`,
 	title: tagMeta?.data.title ?? `Posts about ${tag}`,
-	locale: "zh-Hant" as const,
+	locale: "en" as const,
 	alternates: buildAlternates({
 		zh: localizePath(`/tags/${tag}/`, "zh-Hant"),
 		en: localizePath(`/tags/${tag}/`, "en"),
@@ -61,7 +62,7 @@ const paginationProps = {
 	<nav class="mb-8" aria-label="Breadcrumbs">
 		<ul class="flex items-center">
 			<li class="flex items-center">
-				<a class="text-accent" href="/tags/">Tags</a>
+				<a class="text-accent" href="/en/tags/">Tags</a>
 				<Icon aria-hidden="true" name="mdi:chevron-right" class="mx-1.5" />
 			</li>
 			<li aria-current="page" class=""><span aria-hidden="true">#</span>{tag}</li>
@@ -76,7 +77,7 @@ const paginationProps = {
 		{
 			page.data.map((p) => (
 				<li class="grid gap-1 sm:grid-cols-[auto_1fr]">
-					<PostPreview as="h2" post={p} />
+					<PostPreview as="h2" post={p} locale="en" />
 				</li>
 			))
 		}

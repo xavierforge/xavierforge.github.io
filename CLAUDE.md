@@ -57,19 +57,36 @@ Pasting into Obsidian (from LLM output, web pages, Word) drags in invisible/odd 
 - Fenced code blocks are skipped (pasted Python is full of trailing spaces that aren't the point).
 - Fix findings in the **Obsidian vault** source, not the repo copy. The `sync` step scans the vault; `npm run check:whitespace` scans the synced `src/content/post/`.
 
-### Bilingual posts + site-wide language toggle
+### Bilingual posts + `/en/` URL split (i18n)
 
-Posts are authored in Chinese (the vault is the source of truth). An optional English translation lives **in the repo only** as a sibling `src/content/post/<slug>.en.md` — never in the vault. Key pieces:
+Each language is served on its **own URL** for clean SEO (separate indexable pages + `hreflang`), not a same-URL CSS toggle. There are **three kinds of post**, distinguished by filename suffix and a `lang` frontmatter field:
 
-- **Site-wide language state** (mirrors the theme system): `LangProvider.astro` (inline `<head>` script in `Base.astro`) sets `<html data-lang="zh|en">` — first visit defaults from `navigator.language` (zh* → zh, else en), then the user's choice wins (persisted in `localStorage["lang"]`). `LangToggle.astro` in the header (next to `ThemeToggle`) dispatches a `lang-change` event the provider handles. `global.css` has one unlayered rule — `html[data-lang="zh"] [data-lang="en"], html[data-lang="en"] [data-lang="zh"] { display:none }` — so **anything wrapped in `[data-lang="zh"|"en"]` shows/hides globally with no flash**. Single-language content must stay **unwrapped** so it always shows. This drives listing titles, post `<h1>`, post bodies, and the About page all at once.
+| Kind | File | Authored in | `lang` frontmatter | `:::caution[AI-translated]` | drift-tracked |
+|------|------|-------------|--------------------|-----------------------------|---------------|
+| Chinese original | `<slug>.md` | Obsidian vault (synced) | omit (default `zh-Hant`) | no | — |
+| **English-only original** | `<slug>.md` | Obsidian vault (synced) | **`lang: en`** | no | — |
+| English translation of a Chinese post | `<slug>.en.md` | **repo only** (never vault) | omit (locale from suffix) | AI → yes, human → **no** | yes (`sourceHash`) |
 
+So the `.en.md` suffix means "translation of `<slug>.md`"; an English-only **original** is a normal `<slug>.md` carrying `lang: en` (authored in the vault like any post, synced normally, ignored by the drift checker which only scans `*.en.md`). A **human** translation omits the AI-translated disclaimer (it's not machine-made). Key pieces:
+
+- **URL structure:** Chinese is the default locale with **no prefix** (`/posts/<slug>/`, `/`, `/about/`, …); English mirrors live under **`/en/`** (`/en/posts/<slug>/`, `/en/`, `/en/about/`, …). The `/en/` URL uses the **canonical slug** (no `.en`). `astro.config.ts` has a minimal `i18n` block (`defaultLocale: "zh-Hant"`, `prefixDefaultLocale: false`); the split is driven by **static mirror routes** under `src/pages/en/`, not middleware (GitHub Pages is static). **Don't change Chinese slugs/URLs** — external links/SEO/Medium canonicals point at them.
+- **Locale config + helpers — `src/i18n.ts`:** single source of truth. `LOCALES` maps each locale → `htmlLang` / `ogLocale` / URL `prefix` / toggle glyph. Helpers: `canonicalSlug(id)` (strip `.en`), `localizePath(path, locale)`, `postPath(slug, locale)`, `rssPath(locale)`, and `buildAlternates({zh, en})` (emits the `hreflang` set incl. `x-default`, **omitting any locale that doesn't exist** → P3: never advertise a missing translation).
+- **Data layer — `src/data/post.ts`:** the locale of an entry comes from `localeOf()` — `.en` suffix **or** `lang: en` → English, else Chinese. `getPostsByLocale(locale)` filters on that (+ drafts) and is what every route uses; `getAllPosts()` is just `getPostsByLocale("zh-Hant")`. `getAlternateLocalePost(post)` finds the companion in the other locale — a zh original ↔ its `.en` translation; an English-only original (`lang: en`, no `.en`) has none → no `hreflang` alternate. Drives the conditional `hreflang` + the toggle target.
+- **Metadata — `SiteMeta` (`src/types.ts`) carries `locale` + `alternates` + `rssHref`.** `Base.astro` sets `<html lang>` from the locale and passes `locale` to `Header`; `BaseHead.astro` emits per-locale `og:locale`, self `canonical`, the `hreflang` alternates (resolved against `Astro.site`), and the locale's RSS link. Each page (zh routes + `/en/` mirrors) passes `meta.locale` + `meta.alternates` (built with `buildAlternates`). Post routes compute the alternate only when `getAlternateLocalePost` finds a companion.
+- **Single-language rendering (no CSS toggle):** there is **no** `data-lang` show/hide rule, `LangProvider`, or dual-body panel anymore — each URL renders one language. `BlogPost.astro` has a single body `<slot>`; `src/pages/posts/[...slug].astro` (zh) and `src/pages/en/posts/[...slug].astro` (en) each render their own body. Listing components (`PostPreview`, `PinnedPostCard`, `Masthead`) take a `locale` prop, render the single title/description of the entry they're given, and link via `postPath(canonicalSlug(post.id), locale)`. The `/en/` mirror routes source posts via `getPostsByLocale("en")`.
+- **Header language toggle = navigation.** `LangToggle.astro` is a plain `<a>` to the alternate-locale URL (computed in `Base.astro` from `alternates`, falling back to the other locale's home). The cross-fade is free via the existing `@view-transition { navigation: auto }` rule in `global.css` (MPA transitions) + the speculation-rules prefetch in `Base.astro`. No JS, no `localStorage` — the URL is the language memory.
+- **OG images per language:** `src/pages/og-image/[...slug].png.ts` iterates **both** locales, so `/og-image/<slug>.en.png` renders with the English title. Only its `getStaticPaths` input changed — the card markup (`_ogMarkup.ts`) is untouched.
+- **Comments — one shared thread across languages:** `commentsConfig.mapping` is `"specific"` and `BlogPost.astro` passes `term={canonicalSlug(post.id)}` to `Comments.astro` (emitted as `data-term`), so `/posts/<slug>/` and `/en/posts/<slug>/` map to the **same** Giscus/Discussions thread.
+- **Visitor stats split per URL (intentional):** GoatCounter counts `/posts/<slug>/` and `/en/posts/<slug>/` separately (no change needed); the footer site-wide `TOTAL` is unaffected.
 - **Survives sync:** `scripts/sync.sh` excludes `*.en.md` from the `rsync --delete`, so the vault mirror never wipes translations. Same-folder placement means image paths (`assets/<slug>/…`) and the `![alt|600](…)` width syntax resolve identically to the Chinese post — no path rewrites.
 - **Id convention:** `src/content.config.ts` gives the `post` loader a custom `generateId` that preserves the file path (the default slugifies, collapsing `foo.en.md` → `fooen`). So the translation's id is `<slug>.en`.
-- **Hidden from listings/routes:** `getAllPosts()` in `src/data/post.ts` filters out `id.endsWith(".en")`, which covers every surface at once (index, `/posts`, tags, RSS, og-image, and the `[...slug]` page builder). `getPostTranslation(id)` looks up the `<slug>.en` companion.
-- **Rendering:** `src/pages/posts/[...slug].astro` renders both bodies into named slots (`body-zh`, `body-en`); `BlogPost.astro` wraps them in `data-lang` panels (driven by the site-wide `<html data-lang>` above) **only when a translation exists** — an untranslated post renders its body **unwrapped** (so the hide rule can't blank it). Listing cards (`PostPreview.astro`, `PinnedPostCard.astro`) and `Masthead.astro` self-fetch via `getPostTranslation(post.id)` and render both titles/descriptions as `[data-lang]` spans (unwrapped Chinese when no translation). The TOC stays in the original language.
 - **AI-translation disclaimer:** each `.en.md` starts (right after the frontmatter, before the body) with a `:::caution[AI-translated]` admonition directive whose second sentence — the "leave a comment" line — is its own paragraph. It lives in the markdown (not the layout) so it renders inline like other admonitions; keep this block identical across all translations.
 - **Drift check:** each `.en.md` records a `sourceHash` of the Chinese body it was translated from. `npm run check:translations` (warn-only; `--strict` to gate) flags translations whose source has changed; `node scripts/check-translations.mjs src/content/post --update` re-stamps after (re)translating. Run it before pushing to see which originals drifted.
-- **Producing/updating translations:** do it **one subagent per post**, each from a clean context, given only the translation guidelines (keep code/inline-code/commands/links/image paths/math verbatim; translate prose, image alt, link text; `title` ≤ 60 chars; body starts with the shared `:::caution[AI-translated]` block). Then `--update` to stamp, build-verify (toggle + caution render, images resolve), and commit. Per-post fresh context is a deliberate quality choice.
+- **Producing/updating translations:** do it **one subagent per post**, each from a clean context, given only the translation guidelines (keep code/inline-code/commands/links/image paths/math verbatim; translate prose, image alt, link text; `title` ≤ 60 chars; body starts with the shared `:::caution[AI-translated]` block). Then `--update` to stamp, build-verify (the `/en/` page renders, caution + images resolve), and commit. Per-post fresh context is a deliberate quality choice.
+
+### Deferred SEO follow-ups (later PRs)
+
+The `/en/` split shipped P0+P1+P3 of `~/Downloads/xavierforge-seo-plan.md`. Still open: **P2** sitemap `hreflang` (`xhtml:link` alternates via `@astrojs/sitemap` i18n / `serialize`), **P4** JSON-LD `Article` (`inLanguage` per locale), **P5** robots.txt/404/internal-link/image-alt audit.
 
 ### Layout split
 
@@ -77,7 +94,8 @@ Posts are authored in Chinese (the vault is the source of truth). An optional En
 - `src/layouts/BlogPost.astro` — wraps a post with `Masthead` (renders `coverImage` Notion-style on top), TOC, prose body, back-to-top button.
 - `src/pages/index.astro` — homepage. Pinned Posts render with `PinnedPostCard` (thumbnail card grid); the chronological list uses `PostPreview` (text-only row).
 - `src/pages/portfolio.astro` — projects collection, card grid.
-- `src/pages/about.astro` — static About content. Bilingual: two `prose` panels (`data-lang="en"` / `data-lang="zh"`) driven by the **site-wide** language toggle (see "Bilingual posts + site-wide language toggle") — no per-page toggle of its own. The hero photo uses `astro:assets` `<Image>` (don't revert to a raw `<img src={photo.src}>` — that ships the full-size source, ~4.9 MB, unoptimized).
+- `src/pages/about.astro` — static About content, **Chinese** prose. The English version is its mirror `src/pages/en/about.astro` (English prose, `locale: "en"`) — see "Bilingual posts + `/en/` URL split". The hero photo uses `astro:assets` `<Image>` (don't revert to a raw `<img src={photo.src}>` — that ships the full-size source, ~4.9 MB, unoptimized).
+- `src/pages/en/` — English mirror routes (`index`, `posts/[...page]`, `posts/[...slug]`, `tags/index`, `tags/[tag]/[...page]`, `about`, `portfolio`, `rss.xml`). Thin wrappers over the same components/layouts with `locale: "en"`, sourcing posts via `getPostsByLocale("en")`.
 - `src/site.config.ts` — site title, author, description, URL, date locale, and `menuLinks` for the nav.
 
 ### Comments & visitor stats
@@ -92,6 +110,8 @@ site builds clean with empty values.
   install the [giscus GitHub App](https://github.com/apps/giscus) with access to the repo,
   then visit <https://giscus.app>, enter `owner/name`, and copy the generated `repo`,
   `repoId`, `category`, `categoryId` into `commentsConfig`. Leave `repo` empty to disable.
+  **`mapping` is `"specific"`**: `BlogPost.astro` passes `term={canonicalSlug(post.id)}` so a
+  post's Chinese and `/en/` URLs share one discussion thread (see the bilingual section).
 - **Visitor stats — GoatCounter**. The tracking pixel (`gc.zgo.at/count.js`) loads from
   `Base.astro` **only in PROD** (`import.meta.env.PROD`) so dev/preview hits aren't counted.
   `src/components/GoatCounter.astro` is a reusable on-page counter that fetches

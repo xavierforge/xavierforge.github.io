@@ -2,48 +2,25 @@
 import type { CollectionEntry } from "astro:content";
 import type { HTMLTag, Polymorphic } from "astro/types";
 import FormattedDate from "@/components/FormattedDate.astro";
-import { getPostTranslation } from "@/data/post";
+import { canonicalSlug, DEFAULT_LOCALE, type Locale, postPath } from "@/i18n";
 
 type Props<Tag extends HTMLTag> = Polymorphic<{ as: Tag }> & {
 	post: CollectionEntry<"post">;
 	withDesc?: boolean;
+	locale?: Locale;
 };
 
-const { as: Tag = "div", post, withDesc = false } = Astro.props;
+const { as: Tag = "div", post, withDesc = false, locale = DEFAULT_LOCALE } = Astro.props;
 
-// Show the English title/description to English readers (site-wide data-lang).
-// When no translation exists, render the Chinese value unwrapped so it always shows.
-const translation = await getPostTranslation(post.id);
+// `post` is already the entry for this route's locale (the .en companion on /en/
+// routes), so its title/description are in the right language. Link stays within
+// the locale via postPath().
+const href = postPath(canonicalSlug(post.id), locale);
 ---
 
 <FormattedDate class="text-muted min-w-30 font-semibold" date={post.data.publishDate} />
 <Tag>
 	{post.data.draft && <span class="text-red-500">(Draft) </span>}
-	<a class="cactus-link" href={`/posts/${post.id}/`}>
-		{
-			translation ? (
-				<>
-					<span data-lang="zh">{post.data.title}</span>
-					<span data-lang="en">{translation.data.title}</span>
-				</>
-			) : (
-				post.data.title
-			)
-		}
-	</a>
+	<a class="cactus-link" href={href}>{post.data.title}</a>
 </Tag>
-{
-	withDesc &&
-		(translation ? (
-			<>
-				<q class="line-clamp-3 italic" data-lang="zh">
-					{post.data.description}
-				</q>
-				<q class="line-clamp-3 italic" data-lang="en">
-					{translation.data.description}
-				</q>
-			</>
-		) : (
-			<q class="line-clamp-3 italic">{post.data.description}</q>
-		))
-}
+{withDesc && <q class="line-clamp-3 italic">{post.data.description}</q>}

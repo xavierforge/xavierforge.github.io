@@ -1,7 +1,8 @@
 ---
 import { render } from "astro:content";
 import type { GetStaticPaths, InferGetStaticPropsType } from "astro";
-import { getAllPosts, getPostTranslation } from "@/data/post";
+import { getAllPosts, getAlternateLocalePost } from "@/data/post";
+import { buildAlternates, canonicalSlug, postPath } from "@/i18n";
 import PostLayout from "@/layouts/BlogPost.astro";
 
 // if you're using an adaptor in SSR mode, getStaticPaths wont work -> https://docs.astro.build/en/guides/routing/#modifying-the-slug-example-for-ssr
@@ -18,13 +19,15 @@ type Props = InferGetStaticPropsType<typeof getStaticPaths>;
 const { post } = Astro.props;
 const { Content } = await render(post);
 
-// Optional in-page English translation (`<slug>.en.md`). Rendered into a second
-// language panel; the layout shows a 中文/English toggle only when present.
-const translation = await getPostTranslation(post.id);
-const TranslationContent = translation ? (await render(translation)).Content : null;
+// Emit the English hreflang alternate only when a `<slug>.en.md` companion exists (P3).
+const slug = canonicalSlug(post.id);
+const hasEn = !!(await getAlternateLocalePost(post));
+const alternates = buildAlternates({
+	zh: postPath(slug, "zh-Hant"),
+	en: hasEn ? postPath(slug, "en") : null,
+});
 ---
 
-<PostLayout post={post} hasTranslation={!!TranslationContent}>
-	<Content slot="body-zh" />
-	{TranslationContent && <TranslationContent slot="body-en" />}
+<PostLayout post={post} locale="zh-Hant" alternates={alternates}>
+	<Content />
 </PostLayout>

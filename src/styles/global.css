@@ -12,16 +12,6 @@
 /* use a selector-based strategy for dark mode */
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
-/* Site-wide content language: <html data-lang> (set by LangProvider.astro) hides
-   the inactive language. Anything bilingual is wrapped in [data-lang="zh"|"en"];
-   single-language content is left unwrapped so it always shows. This rule is
-   unlayered, so it wins over Tailwind's layered display utilities (e.g.
-   inline-flex) by cascade-layer precedence — no !important needed. */
-html[data-lang="zh"] [data-lang="en"],
-html[data-lang="en"] [data-lang="zh"] {
-	display: none;
-}
-
 /* register custom colour properties */
 @property --color-global-bg {
 	syntax: "<color>";

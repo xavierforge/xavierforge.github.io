@@ -3,18 +3,16 @@ import { Image } from "astro:assets";
 import type { CollectionEntry } from "astro:content";
 import FormattedDate from "@/components/FormattedDate.astro";
 import GoatCounter from "@/components/GoatCounter.astro";
-import { getPostTranslation } from "@/data/post";
+import { DEFAULT_LOCALE, type Locale, localizePath } from "@/i18n";
 
 interface Props {
 	content: CollectionEntry<"post">;
 	readingTime: string;
+	locale?: Locale;
 }
 
-const { content, readingTime } = Astro.props;
+const { content, readingTime, locale = DEFAULT_LOCALE } = Astro.props;
 const { data } = content;
-
-// English headline for English readers (site-wide data-lang); unwrapped when untranslated.
-const translation = await getPostTranslation(content.id);
 
 const dateTimeOptions: Intl.DateTimeFormatOptions = {
 	month: "long",
@@ -35,18 +33,7 @@ const dateTimeOptions: Intl.DateTimeFormatOptions = {
 	)
 }
 {data.draft ? <span class="text-base text-red-500">(Draft)</span> : null}
-<h1 class="title mb-3 text-3xl sm:text-4xl">
-	{
-		translation ? (
-			<>
-				<span data-lang="zh">{data.title}</span>
-				<span data-lang="en">{translation.data.title}</span>
-			</>
-		) : (
-			data.title
-		)
-	}
-</h1>
+<h1 class="title mb-3 text-3xl sm:text-4xl">{data.title}</h1>
 <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
 	<p class="font-semibold">
 		<FormattedDate date={data.publishDate} dateTimeOptions={dateTimeOptions} /> /{" "}
@@ -86,7 +73,7 @@ const dateTimeOptions: Intl.DateTimeFormatOptions = {
 				<>
 					{/* prettier-ignore */}
 					<span class="contents">
-						<a class="cactus-link inline-block before:content-['#']" data-pagefind-filter={`tag:${tag}`} href={`/tags/${tag}/`}><span class="sr-only">View more blogs with the tag&nbsp;</span>{tag}
+						<a class="cactus-link inline-block before:content-['#']" data-pagefind-filter={`tag:${tag}`} href={localizePath(`/tags/${tag}/`, locale)}><span class="sr-only">View more blogs with the tag&nbsp;</span>{tag}
 						</a>{i < data.tags.length - 1 && ", "}
 					</span>
 				</>

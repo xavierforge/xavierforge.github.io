@@ -2,12 +2,18 @@
 import { Image } from "astro:assets";
 
 import aboutPhoto from "@/assets/about.png";
+import { buildAlternates, localizePath } from "@/i18n";
 import PageLayout from "@/layouts/Base.astro";
 
 const meta = {
 	description:
 		"About ChihYing Yen — data and machine learning engineer, Rust ML author, lifelong learner.",
 	title: "About",
+	locale: "zh-Hant" as const,
+	alternates: buildAlternates({
+		zh: localizePath("/about/", "zh-Hant"),
+		en: localizePath("/about/", "en"),
+	}),
 };
 ---
 
@@ -20,45 +26,7 @@ const meta = {
 		src={aboutPhoto}
 		width={160}
 	/>
-	{/* Language follows the site-wide header toggle (<html data-lang>); global.css shows one panel. */}
-	<div class="prose prose-sm prose-cactus max-w-none" data-lang="en">
-		<p>
-			I’m a data and machine learning engineer. I believe that crafting a great
-			data solution is much like forging a fine tool: choosing the right
-			material, controlling the heat, and hammering it again and again until
-			something genuinely useful is tempered into shape. <em>Xavier’s Data
-			Forge</em> embodies this philosophy, treating raw, messy data as iron ore
-			waiting to be smelted, and refining it with a craftsman’s discipline into
-			reliable insights and systems.
-		</p>
-		<p>
-			With over five years of hands-on experience across the materials and
-			telecom industries, I’ve built machine learning solutions ranging from
-			discovering new materials with Bayesian Optimization to catching
-			production-line defects with YOLO before they turn into real problems. My
-			MLOps practice and data pipelines are built for stability and
-			reproducibility, making sure that what reaches stakeholders is always
-			something that holds up to scrutiny.
-		</p>
-		<p>
-			More recently I’ve extended my focus into the Rust ML ecosystem. I’m the
-			author of <em>From Pythonista to Rustacean: A Data Practitioner’s First
-			Guide to Rust</em> (《從 Pythonista 到 Rustacean：資料從業者的第一本 Rust
-			指南》), which walks Python-rooted data professionals into the Rust world,
-			covering Rust fundamentals, PyO3 integration, and hands-on AI model
-			training with Candle and Burn.
-		</p>
-		<p>
-			I’m also an active open-source contributor. Most recently I’ve worked on
-			<em>zerostack</em>, a lightweight, memory-efficient coding agent harness
-			written in Rust. From writing technical series to collaborating in the
-			open, I’m driven by a lifelong appetite for learning, always hungry for
-			new tools and ideas, and always looking for a sharper way to solve the
-			problem on the anvil.
-		</p>
-	</div>
-
-	<div class="prose prose-sm prose-cactus max-w-none" data-lang="zh">
+	<div class="prose prose-sm prose-cactus max-w-none">
 		<p>
 			我是一名資料／機器學習工程師。我相信打造一個優秀的資料解決方案就像鍛造一件器物，選對素材、掌握火候、反覆敲打，最終才能淬鍊出真正堪用的成品。<em>Xavier’s
 			Data Forge（鍛造資料）</em>正是這個理念的體現，把原始、雜亂的資料當作待煉的鐵料，以匠人之心反覆錘鍊成可靠的洞察與系統。

@@ -1,53 +1,28 @@
 ---
-// Header control for the site-wide content language. Mirrors ThemeToggle.astro:
-// the button dispatches a `lang-change` event that LangProvider.astro handles
-// (sets <html data-lang> + persists to localStorage). The label is driven by the
-// same global data-lang CSS — no JS, no flash — and shows the language you'll
-// switch *to* (an invitation that helps English visitors discover the toggle).
+// Header language switch. With the bilingual URL split, switching language means
+// navigating to the alternate-locale URL (the Chinese post at /posts/<slug>/ vs the
+// English one at /en/posts/<slug>/), not toggling CSS. It's a plain <a> — works
+// without JS — and the site's `@view-transition { navigation: auto }` rule
+// (src/styles/global.css) cross-fades the same-origin navigation automatically.
 //
-// Two touches of motion (both gracefully degrade): a press/hover scale on the
-// button (motion-safe only), and a cross-fade of the swapped content via
-// document.startViewTransition() — reusing the site's existing @view-transition
-// root animation. Browsers without the API, or users who prefer reduced motion,
-// just get an instant swap.
+// The label + target are rendered server-side per page (no flash). `href` is the
+// alternate-locale URL when one exists for this page; Base.astro falls back to the
+// other locale's home for pages without a counterpart.
+import { DEFAULT_LOCALE, LOCALES, type Locale } from "@/i18n";
+
+interface Props {
+	locale: Locale;
+	href: string;
+}
+
+const { locale = DEFAULT_LOCALE, href } = Astro.props;
+const { toggleLabel, toggleAriaLabel } = LOCALES[locale];
 ---
 
-<lang-toggle class="ms-2 sm:ms-4">
-	<button
-		aria-label="Switch language / 切換語言"
-		class="hover:text-accent relative flex h-9 w-9 cursor-pointer items-center justify-center text-sm font-semibold transition-transform duration-150 motion-safe:hover:scale-110 motion-safe:active:scale-90"
-		type="button"
-	>
-		<span aria-hidden="true" data-lang="zh">EN</span>
-		<span aria-hidden="true" data-lang="en">中</span>
-	</button>
-</lang-toggle>
-
-<script>
-	class LangToggle extends HTMLElement {
-		constructor() {
-			super();
-			const button = this.querySelector<HTMLButtonElement>("button");
-			button?.addEventListener("click", () => {
-				const current =
-					document.documentElement.getAttribute("data-lang") === "en" ? "en" : "zh";
-				const next = current === "en" ? "zh" : "en";
-				const apply = () =>
-					document.dispatchEvent(new CustomEvent("lang-change", { detail: { lang: next } }));
-
-				// Cross-fade the swap where supported; otherwise swap instantly.
-				const doc = document as Document & {
-					startViewTransition?: (cb: () => void) => unknown;
-				};
-				const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-				if (!reduceMotion && typeof doc.startViewTransition === "function") {
-					doc.startViewTransition(apply);
-				} else {
-					apply();
-				}
-			});
-		}
-	}
-
-	customElements.define("lang-toggle", LangToggle);
-</script>
+<a
+	aria-label={toggleAriaLabel}
+	class="hover:text-accent relative ms-2 flex h-9 w-9 cursor-pointer items-center justify-center text-sm font-semibold transition-transform duration-150 motion-safe:hover:scale-110 motion-safe:active:scale-90 sm:ms-4"
+	href={href}
+>
+	<span aria-hidden="true">{toggleLabel}</span>
+</a>

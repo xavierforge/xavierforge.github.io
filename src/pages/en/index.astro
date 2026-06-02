@@ -3,7 +3,7 @@ import type { CollectionEntry } from "astro:content";
 import PinnedPostCard from "@/components/blog/PinnedPostCard.astro";
 import PostPreview from "@/components/blog/PostPreview.astro";
 import SocialList from "@/components/SocialList.astro";
-import { getAllPosts } from "@/data/post";
+import { getPostsByLocale } from "@/data/post";
 import { buildAlternates, localizePath } from "@/i18n";
 import PageLayout from "@/layouts/Base.astro";
 import { siteConfig } from "@/site.config";
@@ -15,7 +15,7 @@ const alternates = buildAlternates({
 });
 
 const MAX_POSTS = 30;
-const allPosts = await getAllPosts();
+const allPosts = await getPostsByLocale("en");
 const allPostsByDate = allPosts.sort(collectionDateSort) as CollectionEntry<"post">[];
 const latestPosts = allPostsByDate.slice(0, MAX_POSTS);
 
@@ -27,7 +27,7 @@ const pinnedPosts = allPostsByDate
 	.toArray();
 ---
 
-<PageLayout meta={{ title: "Home", locale: "zh-Hant", alternates }}>
+<PageLayout meta={{ title: "Home", locale: "en", alternates }}>
 	<section>
 		<h1 class="title mb-6">Hi, I'm Chih Ying (Xavier)</h1>
 		<p class="mb-4">{siteConfig.description}</p>
@@ -37,13 +37,10 @@ const pinnedPosts = allPostsByDate
 		pinnedPosts.length > 0 && (
 			<section class="mt-16">
 				<h2 class="title mb-6 text-xl">Pinned Posts</h2>
-				<ul
-					class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
-					role="list"
-				>
+				<ul class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3" role="list">
 					{pinnedPosts.map((p) => (
 						<li>
-							<PinnedPostCard post={p} />
+							<PinnedPostCard post={p} locale="en" />
 						</li>
 					))}
 				</ul>
@@ -51,12 +48,12 @@ const pinnedPosts = allPostsByDate
 		)
 	}
 	<section class="mt-16">
-		<h2 class="title text-accent mb-6 text-xl"><a href="/posts/">Posts</a></h2>
+		<h2 class="title text-accent mb-6 text-xl"><a href="/en/posts/">Posts</a></h2>
 		<ul class="space-y-4" role="list">
 			{
 				latestPosts.map((p) => (
 					<li class="grid gap-1 sm:grid-cols-[auto_1fr]">
-						<PostPreview post={p} />
+						<PostPreview post={p} locale="en" />
 					</li>
 				))
 			}

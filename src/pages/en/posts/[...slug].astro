@@ -1,0 +1,34 @@
+---
+import { render } from "astro:content";
+import type { GetStaticPaths, InferGetStaticPropsType } from "astro";
+import { getAlternateLocalePost, getPostsByLocale } from "@/data/post";
+import { buildAlternates, canonicalSlug, postPath } from "@/i18n";
+import PostLayout from "@/layouts/BlogPost.astro";
+
+// English mirror of /posts/[...slug] — sources the `.en.md` companions and renders
+// the English body only. The URL uses the canonical slug (no `.en`): /en/posts/<slug>/.
+export const getStaticPaths = (async () => {
+	const enPosts = await getPostsByLocale("en");
+	return enPosts.map((post) => ({
+		params: { slug: canonicalSlug(post.id) },
+		props: { post },
+	}));
+}) satisfies GetStaticPaths;
+
+type Props = InferGetStaticPropsType<typeof getStaticPaths>;
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+
+// Emit the Chinese hreflang alternate only when the source `<slug>.md` exists (P3).
+const slug = canonicalSlug(post.id);
+const hasZh = !!(await getAlternateLocalePost(post));
+const alternates = buildAlternates({
+	zh: hasZh ? postPath(slug, "zh-Hant") : null,
+	en: postPath(slug, "en"),
+});
+---
+
+<PostLayout post={post} locale="en" alternates={alternates}>
+	<Content />
+</PostLayout>

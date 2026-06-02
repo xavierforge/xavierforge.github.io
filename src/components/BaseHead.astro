@@ -1,17 +1,25 @@
 ---
 import { WEBMENTION_PINGBACK, WEBMENTION_URL } from "astro:env/client";
+import { DEFAULT_LOCALE, LOCALES } from "@/i18n";
 import { siteConfig } from "@/site.config";
 import type { SiteMeta } from "@/types";
 import "@/styles/global.css";
 
 type Props = SiteMeta;
 
-const { articleDate, description, ogImage, title } = Astro.props;
+const { articleDate, description, ogImage, title, alternates, rssHref } = Astro.props;
+
+const locale = Astro.props.locale ?? DEFAULT_LOCALE;
 
 const titleSeparator = "•";
 const siteTitle = `${title} ${titleSeparator} ${siteConfig.title}`;
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const socialImageURL = new URL(ogImage ? ogImage : "/social-card.png", Astro.url).href;
+// Resolve hreflang alternate paths to absolute URLs against the site origin.
+const alternateLinks = (alternates ?? []).map((alt) => ({
+	hreflang: alt.hreflang,
+	href: new URL(alt.href, Astro.site).href,
+}));
 ---
 
 <meta charset="utf-8" />
@@ -42,8 +50,15 @@ const socialImageURL = new URL(ogImage ? ogImage : "/social-card.png", Astro.url
 	)
 }
 
-{/* Canonical URL */}
+{/* Canonical URL (self-referencing) */}
 <link href={canonicalURL} rel="canonical" />
+
+{/* hreflang alternates — only languages that actually exist for this page (P3) */}
+{
+	alternateLinks.map((alt) => (
+		<link rel="alternate" hreflang={alt.hreflang} href={alt.href} />
+	))
+}
 
 {/* Primary Meta Tags */}
 <meta content={siteTitle} name="title" />
@@ -56,7 +71,7 @@ const socialImageURL = new URL(ogImage ? ogImage : "/social-card.png", Astro.url
 <meta content={description} property="og:description" />
 <meta content={canonicalURL} property="og:url" />
 <meta content={siteConfig.title} property="og:site_name" />
-<meta content={siteConfig.ogLocale} property="og:locale" />
+<meta content={LOCALES[locale].ogLocale} property="og:locale" />
 <meta content={socialImageURL} property="og:image" />
 <meta content="1200" property="og:image:width" />
 <meta content="630" property="og:image:height" />
@@ -80,7 +95,7 @@ const socialImageURL = new URL(ogImage ? ogImage : "/social-card.png", Astro.url
 <link href="/sitemap-index.xml" rel="sitemap" />
 
 {/* RSS auto-discovery */}
-<link href="/rss.xml" title="Blog" rel="alternate" type="application/rss+xml" />
+<link href={rssHref ?? "/rss.xml"} title="Blog" rel="alternate" type="application/rss+xml" />
 
 {/* Webmentions */}
 {

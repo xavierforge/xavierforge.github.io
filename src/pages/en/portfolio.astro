@@ -4,12 +4,14 @@ import { getCollection } from "astro:content";
 import { buildAlternates, localizePath } from "@/i18n";
 import PageLayout from "@/layouts/Base.astro";
 
+// Projects have no per-language variants, so the English portfolio shows the same
+// project data with English chrome.
 const projects = (await getCollection("project")).sort((a, b) => a.data.order - b.data.order);
 
 const meta = {
 	description: "Selected projects by ChihYing Yen.",
 	title: "Portfolio",
-	locale: "zh-Hant" as const,
+	locale: "en" as const,
 	alternates: buildAlternates({
 		zh: localizePath("/portfolio/", "zh-Hant"),
 		en: localizePath("/portfolio/", "en"),
@@ -19,10 +21,7 @@ const meta = {
 
 <PageLayout meta={meta}>
 	<h1 class="title mb-12">Portfolio</h1>
-	<ul
-		class="grid grid-cols-1 gap-6 sm:grid-cols-2"
-		role="list"
-	>
+	<ul class="grid grid-cols-1 gap-6 sm:grid-cols-2" role="list">
 		{
 			projects.map((project) => (
 				<li>

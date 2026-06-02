@@ -1,23 +1,51 @@
 import { type CollectionEntry, getCollection } from "astro:content";
+import { canonicalSlug, type Locale } from "@/i18n";
 
-/** filter out draft posts based on the environment
- *
- * Also excludes `*.en.md` translations: they are not standalone posts but
- * alternate-language bodies rendered in-page on their original post via a
- * toggle (see getPostTranslation + BlogPost.astro). Excluding them here keeps
- * them out of every listing/route at once — index, /posts, tags, RSS, og-image,
- * and the [...slug] page builder all go through getAllPosts.
- */
-export async function getAllPosts(): Promise<CollectionEntry<"post">[]> {
-	return await getCollection("post", ({ id, data }) => {
-		if (id.endsWith(".en")) return false;
-		return import.meta.env.PROD ? !data.draft : true;
+/** A post's locale, from either signal:
+ *  - filename `.en.md` suffix → an English *translation* of a `<slug>.md` original
+ *  - frontmatter `lang: en`   → an English-only *original* (authored in the vault)
+ *  Everything else is the default locale (Chinese). */
+function localeOf({ id, data }: CollectionEntry<"post">): Locale {
+	return id.endsWith(".en") || data.lang === "en" ? "en" : "zh-Hant";
+}
+
+/** Posts for a given locale, with draft/PROD filtering. */
+export async function getPostsByLocale(locale: Locale): Promise<CollectionEntry<"post">[]> {
+	return await getCollection("post", (entry) => {
+		if (localeOf(entry) !== locale) return false;
+		return import.meta.env.PROD ? !entry.data.draft : true;
 	});
 }
 
-/** Look up the English translation companion for a post id, if one exists. */
+/** The Chinese (default-locale) posts — what every zh listing/route consumes
+ *  (index, /posts, tags, RSS, og-image, the [...slug] builder). Excludes the
+ *  `.en.md` translations and any `lang: en` English-only originals. */
+export async function getAllPosts(): Promise<CollectionEntry<"post">[]> {
+	return await getPostsByLocale("zh-Hant");
+}
+
+/** Look up the English translation companion for a (Chinese) post id, if one exists. */
 export async function getPostTranslation(id: string): Promise<CollectionEntry<"post"> | undefined> {
 	const matches = await getCollection("post", (entry) => entry.id === `${id}.en`);
+	return matches[0];
+}
+
+/** The companion entry of `post` in the other locale, if it exists.
+ *  zh original `foo` → its translation `foo.en`; en translation `foo.en` → its
+ *  source `foo`. An English-only original (`lang: en`, no `.en` suffix) has no
+ *  companion → undefined. Drives the conditional `hreflang` + the language toggle. */
+export async function getAlternateLocalePost(
+	post: CollectionEntry<"post">,
+): Promise<CollectionEntry<"post"> | undefined> {
+	let otherId: string;
+	if (post.id.endsWith(".en")) {
+		otherId = canonicalSlug(post.id); // en translation → its zh source
+	} else if (post.data.lang === "en") {
+		return undefined; // en-only original → no Chinese companion
+	} else {
+		otherId = `${post.id}.en`; // zh original → its en translation
+	}
+	const matches = await getCollection("post", (entry) => entry.id === otherId);
 	return matches[0];
 }
 

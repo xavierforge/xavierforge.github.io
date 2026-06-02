@@ -1,6 +1,14 @@
 ---
 import { commentsConfig } from "@/site.config";
 
+interface Props {
+	/** Giscus discussion term — the post's canonical slug, shared by zh & /en/ so
+	 *  both language URLs map to one thread. Required when mapping is "specific". */
+	term?: string;
+}
+
+const { term } = Astro.props;
+
 const { category, categoryId, inputPosition, lang, mapping, reactionsEnabled, repo, repoId } =
 	commentsConfig;
 
@@ -19,6 +27,7 @@ const enabled = repo.length > 0;
 				data-input-position={inputPosition}
 				data-lang={lang}
 				data-mapping={mapping}
+				data-term={term}
 				data-reactions-enabled={reactionsEnabled ? "1" : "0"}
 				data-repo={repo}
 				data-repo-id={repoId}
@@ -49,6 +58,7 @@ const enabled = repo.length > 0;
 				s.setAttribute("data-category", host.dataset.category!);
 				s.setAttribute("data-category-id", host.dataset.categoryId!);
 				s.setAttribute("data-mapping", host.dataset.mapping!);
+				if (host.dataset.term) s.setAttribute("data-term", host.dataset.term);
 				s.setAttribute("data-strict", "0");
 				s.setAttribute("data-reactions-enabled", host.dataset.reactionsEnabled!);
 				s.setAttribute("data-emit-metadata", "0");

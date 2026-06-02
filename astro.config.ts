@@ -28,6 +28,14 @@ import { expressiveCodeOptions, siteConfig } from "./src/site.config";
 // https://astro.build/config
 export default defineConfig({
 	site: siteConfig.url,
+	// Chinese is the default locale (no URL prefix); English lives under /en/.
+	// Mirror routes under src/pages/en/ drive the split — no middleware needed for
+	// the static GitHub Pages build. See src/i18n.ts for the locale → URL/meta map.
+	i18n: {
+		defaultLocale: "zh-Hant",
+		locales: ["zh-Hant", "en"],
+		routing: { prefixDefaultLocale: false },
+	},
 	image: {
 		domains: ["webmention.io"],
 		// Responsive images: generate a srcset (incl. 2x) so Markdown images stay

@@ -4,7 +4,7 @@ import satori, { type SatoriOptions } from "satori";
 import sharp from "sharp";
 import RobotoMonoBold from "@/assets/roboto-mono-700.ttf";
 import RobotoMono from "@/assets/roboto-mono-regular.ttf";
-import { getAllPosts } from "@/data/post";
+import { getPostsByLocale } from "@/data/post";
 import { getFormattedDate } from "@/utils/date";
 import { readCache, writeToCache } from "./_cacheUtil";
 import { loadCJKFonts } from "./_loadGoogleFont";
@@ -78,7 +78,10 @@ export async function GET(context: APIContext) {
 }
 
 export async function getStaticPaths() {
-	const posts = await getAllPosts();
+	// Both locales: zh posts key off `<slug>` and English companions off `<slug>.en`,
+	// so each /en/ page gets a card rendered with its own (English) title. Only the
+	// getStaticPaths input set changes — the card markup (_ogMarkup) is untouched.
+	const posts = [...(await getPostsByLocale("zh-Hant")), ...(await getPostsByLocale("en"))];
 	return posts
 		.values()
 		.filter(({ data }) => !data.ogImage)

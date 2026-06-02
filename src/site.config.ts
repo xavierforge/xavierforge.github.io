@@ -7,8 +7,10 @@ export const siteConfig: SiteConfig = {
 	author: "ChihYing Yen",
 	description:
 		"Rust author and lifelong learner, building and writing at the intersection of systems and ML.",
-	lang: "en",
-	ogLocale: "en",
+	// Primary/default locale of the site is Traditional Chinese. Per-page locale
+	// (and og:locale) is overridden on the /en/ routes via SiteMeta.locale.
+	lang: "zh-Hant",
+	ogLocale: "zh_TW",
 	date: {
 		locale: "en-GB",
 		options: {
@@ -27,7 +29,9 @@ export const commentsConfig: CommentsConfig = {
 	categoryId: "DIC_kwDOJcSeT84C-E8A",
 	inputPosition: "bottom",
 	lang: "zh-TW",
-	mapping: "pathname",
+	// "specific" + a per-post canonical term (the slug, shared by zh & /en/) so both
+	// language URLs of a post map to one Giscus/Discussions thread. See Comments.astro.
+	mapping: "specific",
 	reactionsEnabled: true,
 	repo: "xavierforge/xavierforge.github.io",
 	repoId: "R_kgDOJcSeTw",

@@ -32,6 +32,11 @@ const post = defineCollection({
 				})
 				.optional(),
 			draft: z.boolean().default(false),
+			// Locale of an *original* post. Omit (default zh-Hant) for Chinese posts and
+			// for `.en.md` translation companions (their locale comes from the suffix).
+			// Set `lang: en` on a normal `<slug>.md` to author an English-only original in
+			// the vault — it routes to /en/ and stays off the Chinese site. See post.ts.
+			lang: z.enum(["zh-Hant", "en"]).optional(),
 			ogImage: z.string().optional(),
 			tags: z.array(z.string()).default([]).transform(removeDupsAndLowerCase),
 			publishDate: z

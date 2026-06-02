@@ -2,16 +2,32 @@
 import LangToggle from "@/components/LangToggle.astro";
 import Search from "@/components/Search.astro";
 import ThemeToggle from "@/components/ThemeToggle.astro";
+import { DEFAULT_LOCALE, type Locale, localizePath } from "@/i18n";
 import { menuLinks } from "@/site.config";
 import { siteConfig } from "../../site.config";
+
+interface Props {
+	locale: Locale;
+	langToggleHref: string;
+}
+
+const { locale = DEFAULT_LOCALE, langToggleHref } = Astro.props;
+
+// Keep navigation within the current locale: prefix every menu/home link with /en
+// on English pages. menuLinks titles stay as-is (already English-language labels).
+const homeHref = localizePath("/", locale);
+const localizedLinks = menuLinks.map((link) => ({
+	...link,
+	path: localizePath(link.path, locale),
+}));
 ---
 
 <header class="group relative mb-18 flex items-center sm:ps-18" id="main-header">
 	<div class="flex sm:flex-col">
 		<a
-			aria-current={Astro.url.pathname === "/" ? "page" : false}
+			aria-current={Astro.url.pathname === homeHref ? "page" : false}
 			class="logo-link inline-flex items-center sm:relative sm:inline-block"
-			href="/"
+			href={homeHref}
 		>
 			<svg
 				aria-hidden="true"
@@ -127,7 +143,7 @@ import { siteConfig } from "../../site.config";
 			id="navigation-menu"
 		>
 			{
-				menuLinks.map((link) => (
+				localizedLinks.map((link) => (
 					<a
 						aria-current={Astro.url.pathname === link.path ? "page" : false}
 						class="text-accent px-2 py-4 font-semibold sm:px-4 sm:py-0 sm:underline-offset-2 sm:hover:underline"
@@ -141,7 +157,7 @@ import { siteConfig } from "../../site.config";
 	</div>
 	<Search />
 	<ThemeToggle />
-	<LangToggle />
+	<LangToggle locale={locale} href={langToggleHref} />
 	<mobile-button>
 		<button
 			aria-expanded="false"

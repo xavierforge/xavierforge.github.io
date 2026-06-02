@@ -41,6 +41,12 @@ export interface SiteMeta {
 	description?: string;
 	ogImage?: string | undefined;
 	title: string;
+	/** Page locale; defaults to the site default (zh-Hant). Drives <html lang> + og:locale. */
+	locale?: import("@/i18n").Locale | undefined;
+	/** hreflang alternates (incl. self + x-default); paths resolved against Astro.site. */
+	alternates?: import("@/i18n").Alternate[] | undefined;
+	/** RSS feed for this locale, e.g. "/rss.xml" | "/en/rss.xml". */
+	rssHref?: string | undefined;
 }
 
 /** Webmentions */
