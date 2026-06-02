@@ -92,7 +92,7 @@ All of `~/Downloads/xavierforge-seo-plan.md` is shipped: **P0** i18n routing, **
 
 - **P4 — JSON-LD:** `BlogPost.astro` builds a schema.org `Article` (headline/description/image/dates/author/publisher/`inLanguage`) and passes it via `SiteMeta.jsonLd`; `BaseHead.astro` emits it as `<script type="application/ld+json">` (escaping `<`). Post pages only — listings/home don't carry it.
 - **P5 — robots.txt** is already correct (the `astro-robots-txt` integration emits `Sitemap:` automatically); **404** is a single bilingual page with nav links (GitHub Pages can't serve a per-locale 404).
-- **Remaining content fix (do in the Obsidian vault, not the repo):** `numba-cuda-puzzles-1` has one image with an empty `![]()` alt (the `file-20260529134830454.png` screenshot) that wants a description. (The CUDA series' absolute `xavierforge.dev` cross-links were already made root-relative — zh in the vault, en in the `.en.md`.)
+- **P5 content sweep done.** The CUDA series' absolute `xavierforge.dev` cross-links are now root-relative (zh in the vault, en in the `.en.md`). One image in `numba-cuda-puzzles-1` (`file-20260529134830454.png`) has an empty `![]()` alt **on purpose** — it's decorative, so `alt=""` is the correct semantic. Don't "fix" it in future alt audits.
 
 ### Layout split
 
