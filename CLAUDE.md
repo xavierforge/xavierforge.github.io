@@ -84,9 +84,11 @@ So the `.en.md` suffix means "translation of `<slug>.md`"; an English-only **ori
 - **Drift check:** each `.en.md` records a `sourceHash` of the Chinese body it was translated from. `npm run check:translations` (warn-only; `--strict` to gate) flags translations whose source has changed; `node scripts/check-translations.mjs src/content/post --update` re-stamps after (re)translating. Run it before pushing to see which originals drifted.
 - **Producing/updating translations:** do it **one subagent per post**, each from a clean context, given only the translation guidelines (keep code/inline-code/commands/links/image paths/math verbatim; translate prose, image alt, link text; `title` ≤ 60 chars; body starts with the shared `:::caution[AI-translated]` block). Then `--update` to stamp, build-verify (the `/en/` page renders, caution + images resolve), and commit. Per-post fresh context is a deliberate quality choice.
 
-### Deferred SEO follow-ups (later PRs)
+- **hreflang is auto-maintained — never hand-write it.** Every signal (per-page `<head>` hreflang/canonical, the language toggle target, and the sitemap alternates) is **derived at build time from which files exist**. To make a post bilingual you only create the file (a `.en.md` translation, or a `lang: en` original); the next build wires up the reciprocal hreflang on both pages, the toggle, and the sitemap automatically — and emits nothing for a language that doesn't exist (P3). Sitemap `hreflang` comes from `@astrojs/sitemap`'s `i18n` option in `astro.config.ts` (groups pages by their locale-stripped path).
 
-The `/en/` split shipped P0+P1+P3 of `~/Downloads/xavierforge-seo-plan.md`. Still open: **P2** sitemap `hreflang` (`xhtml:link` alternates via `@astrojs/sitemap` i18n / `serialize`), **P4** JSON-LD `Article` (`inLanguage` per locale), **P5** robots.txt/404/internal-link/image-alt audit.
+### SEO plan status
+
+Shipped from `~/Downloads/xavierforge-seo-plan.md`: **P0** i18n routing, **P1** metadata consistency, **P3** conditional hreflang, **P2** sitemap hreflang. Still open: **P4** JSON-LD `Article` (`inLanguage` per locale), **P5** robots.txt/404/internal-link/image-alt audit.
 
 ### Layout split
 
