@@ -4,8 +4,9 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-// Update/bump version when changing markup in _ogMarkup.ts, or fonts/config in [...slug].png.ts
-const CACHE_VERSION = "v5";
+// Update/bump version when changing markup in _ogMarkup.ts, or fonts/config in [...slug].jpg.ts
+// (v6: switched output PNG → JPEG, so old cached buffers must be invalidated)
+const CACHE_VERSION = "v6";
 
 // Cache directory, defaults to node_modules/.astro/og-images
 const CACHE_DIR = path.join(fileURLToPath(cacheDir), "og-images");

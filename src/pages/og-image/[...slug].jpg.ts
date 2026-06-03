@@ -32,15 +32,18 @@ const ogOptions: SatoriOptions = {
 
 type Props = InferGetStaticPropsType<typeof getStaticPaths>;
 
-// Render the post's cover, cropped to the 1200×630 OG canvas, as a PNG.
+// Render the post's cover, cropped to the 1200×630 OG canvas, as a JPEG.
+// Covers are photographs — lossless PNG ran ~2 MB (over the 1 MB social-scraper
+// warning threshold); mozjpeg q80 lands ~200 KB with no visible loss at OG size.
 async function renderCover(coverPath: string): Promise<Buffer> {
 	return sharp(coverPath)
 		.resize(1200, 630, { fit: "cover", position: "centre" })
-		.png({ compressionLevel: 9 })
+		.jpeg({ quality: 80, mozjpeg: true })
 		.toBuffer();
 }
 
-// The Cactus title-card fallback (Satori → SVG → PNG) for cover-less posts.
+// The Cactus title-card fallback (Satori → SVG → JPEG) for cover-less posts.
+// Flat card with crisp text → keep quality high so edges stay clean.
 async function renderTitleCard(title: string, pubDate: Date): Promise<Buffer> {
 	const postDate = getFormattedDate(pubDate, {
 		month: "long",
@@ -52,7 +55,7 @@ async function renderTitleCard(title: string, pubDate: Date): Promise<Buffer> {
 		...ogOptions,
 		fonts: [...ogOptions.fonts, ...cjkFonts],
 	});
-	return sharp(Buffer.from(svg)).png().toBuffer();
+	return sharp(Buffer.from(svg)).jpeg({ quality: 92, mozjpeg: true }).toBuffer();
 }
 
 export async function GET(context: APIContext) {
@@ -62,17 +65,17 @@ export async function GET(context: APIContext) {
 	// with the title-card cache and re-renders when the cover file changes.
 	const variant = coverPath ? `cover:${coverPath}:${fs.statSync(coverPath).mtimeMs}` : "";
 
-	let pngBuffer = readCache(title, pubDate, variant);
-	if (!pngBuffer) {
+	let imageBuffer = readCache(title, pubDate, variant);
+	if (!imageBuffer) {
 		console.info(`Generating new OG image for: ${title}`);
-		pngBuffer = coverPath ? await renderCover(coverPath) : await renderTitleCard(title, pubDate);
-		writeToCache(title, pubDate, pngBuffer, variant);
+		imageBuffer = coverPath ? await renderCover(coverPath) : await renderTitleCard(title, pubDate);
+		writeToCache(title, pubDate, imageBuffer, variant);
 	}
 
-	return new Response(new Uint8Array(pngBuffer), {
+	return new Response(new Uint8Array(imageBuffer), {
 		headers: {
 			"Cache-Control": "public, max-age=31536000, immutable",
-			"Content-Type": "image/png",
+			"Content-Type": "image/jpeg",
 		},
 	});
 }
