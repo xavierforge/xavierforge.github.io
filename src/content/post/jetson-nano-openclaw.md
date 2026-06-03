@@ -4,7 +4,7 @@ description: "把退役的 Jetson Nano (Ubuntu 18.04) 打造成安全隔離的�
 publishDate: 2026-02-22
 updatedDate: 2026-03-06
 coverImage:
-  src: ./assets/jetson-nano-openclaw/cover.png
+  src: ./assets/jetson-nano-openclaw/cover.jpg
   alt: "AI 生成的 Jetson Nano 部署 OpenClaw 縮圖"
 tags: [Jetson Nano, OpenClaw, AI Agent, Bun, Ubuntu]
 pinned: true

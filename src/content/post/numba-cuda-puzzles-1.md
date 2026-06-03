@@ -4,7 +4,7 @@ description: 一起玩遊戲學怎麼寫驅動 99% 深度學習的演算法 CUDA
 publishDate: 2024-06-17
 updatedDate: 2026-05-29
 coverImage:
-  src: ./assets/numba-cuda-puzzles-1/cover.png
+  src: ./assets/numba-cuda-puzzles-1/cover.jpg
   alt: Time to learn CUDA meme
 tags:
   - CUDA
@@ -20,10 +20,10 @@ draft: false
 ## 前言
 在學習深度學習的過程中，一定會常常看到 CUDA 這個名詞出現在各種環境設定與安裝的教學中，可以說是從旅程一開始就陪在我們身邊，但就像空氣一樣，即使知道它很重要，我們日常並不會深刻地感覺到它的存在。
 這主要是因為各個深度學習框架都已經把這部分照顧好了 (見下圖)，所以實務上很少有機會直接與它打交道：
-![各大框架都有 CUDA 底層 (.cu 檔)，TensorFlow 的 CUDA 底層則歸類在 C++ 中 (.cu.cc 檔)|800](assets/numba-cuda-puzzles-1/file-20260527162851976.png)
+![各大框架都有 CUDA 底層 (.cu 檔)，TensorFlow 的 CUDA 底層則歸類在 C++ 中 (.cu.cc 檔)|800](assets/numba-cuda-puzzles-1/file-20260527162851976.jpg)
 隨著 LLM 與 Diffusion Model 等各類大型生成式模型的崛起 (還有 NVDA 的股價 📈)，GPU 架構的重要性與日俱增，也該是時候學點 CUDA 了。
 而要學習 CUDA 就不得不提到來自 Cornell Tech 及 Hugging Face 的大神 Sasha Rush ([@srush_nlp](https://x.com/srush_nlp)) 開發 [GPU Puzzles](https://github.com/srush/GPU-Puzzles) 解謎遊戲：
-![GPU Puzzles 解謎遊戲](assets/numba-cuda-puzzles-1/file-20260527153511112.png)
+![GPU Puzzles 解謎遊戲](assets/numba-cuda-puzzles-1/file-20260527153511112.jpg)
 它提供互動式的謎題，讓我們能在實際撰寫 GPU 核心程式碼 (Kernel) 的同時學習 CUDA 的基本觀念，並且將結果視覺化，讓我們能更好的建立直覺。
 
 更棒的是，它使用 Python 的 [Numba](https://numba.pydata.org/) 函式庫，所以不需要會寫 [C](https://www.youtube.com/watch?v=QUuzIjIcUws) 就能無痛獲取撰寫低階 CUDA 程式碼的體驗 (實際上，Numba 的寫法跟 C++ 的寫法很接近，然後本文的超連結我都有檢查過了，可以放心點開)。
@@ -58,7 +58,7 @@ CUDA (全名是 Compute Unified Device Architecture，統一計算架構) 是由
 
 注意，這幾個步驟都是由 CPU 所發起的，這也是它被稱為 Host 的原因，作為整個運算的主要控制者，除了自己要執行的運算之外，還得準備要運算的資料以及將 Kernel 派送到 GPU 上執行，超級忙！
 下圖中橘色文字即為 CPU 需要負責的部分，不管是收發資料還是配置記憶體，GPU 都只能被動地對 CPU 做出反應 (這只是比較基本的模型，GPU 其實不總是那麼被動，但這已經超過本文的範疇)：
-![CUDA 程式碼運作架構示意圖|500](assets/numba-cuda-puzzles-1/file-20260527153939612.png)
+![CUDA 程式碼運作架構示意圖|500](assets/numba-cuda-puzzles-1/file-20260527153939612.jpg)
 當然，在硬體間傳送資料一定會有代價，所以在設計程式時需要盡可能避免多次來回傳輸。
 > [!NOTE] Kernel vs. Device function
 > 注意，CUDA 程式設計中還有一個與核心函式 (Kernel) 相對的概念 — 裝置函式 (Device function)，它指的是只能在 Device 上呼叫 (由 Kernel 或另一個裝置函式) 並在 Device 上執行的 GPU 函式。
@@ -80,24 +80,24 @@ CUDA (全名是 Compute Unified Device Architecture，統一計算架構) 是由
 最基本的部件，用以執行程式碼與儲存少量的狀態 (State)，因此每個執行緒都具備固定大小的 **區域記憶體 (Local memory)** 供其調用。
 
 為了更方便理解，我們將一個執行緒具現化為一個阿瑋 (不知道為什麼，就感覺挺適合的)，而他能存取的區域記憶體則為一罐啤酒 (實務上一般使用 B̷a̷r̷ ̷b̷e̷e̷r̷):
-![執行緒與 Local memory|400](assets/numba-cuda-puzzles-1/file-20260527160831407.png)
+![執行緒與 Local memory|400](assets/numba-cuda-puzzles-1/file-20260527160831407.jpg)
 #### 區塊 (Blocks)
 一群執行緒就稱為區塊，在程式上，它們代表的是一群通力合作解決一個子任務的執行緒。
 其中最重要的一個細節是每個執行緒都能夠透過 CUDA 預先定義好的內建變數 (`threadIdx`) 知曉自己在 Block 中的位置。
 如此一來，我們就能明確地為每個執行緒指派它該負責的部分，這就是前面所說「平行性表現在啟動執行緒時」的實際樣貌：一次啟動一大堆執行緒，再靠 `threadIdx` 讓每條執行緒各自認領不同的資料。
-![區塊與 threadIdx|600](assets/numba-cuda-puzzles-1/file-20260527161157152.png)
+![區塊與 threadIdx|600](assets/numba-cuda-puzzles-1/file-20260527161157152.jpg)
 身為開發者，我們的任務就是適當定義區塊的大小，讓執行緒能一起合作完成運算。
 但要注意，CUDA 會限制 **每個區塊內** 的執行緒數量 (目前多數 GPU 上每個區塊最多 1024 個)，因此有時候會需要多個區塊才能完成運算。
 事實上，CUDA 還支援了 2D 與 3D 區塊，下圖為 2D 區塊，其長寬就是這個區塊的大小：
-![2D 區塊|400](assets/numba-cuda-puzzles-1/file-20260527161403370.png)
+![2D 區塊|400](assets/numba-cuda-puzzles-1/file-20260527161403370.jpg)
 而由於不同的執行緒間，通常都有共用資料的需求，因此住在同一個區塊的執行緒可以透過共享記憶體 (Shared memory) 進行交流。
 並且只有該區塊中的執行緒才能讀取、寫入這塊固定大小的記憶體，我們可以把共享記憶體具現化為一手啤酒 (很荒謬，請忍耐一下)：
-![區塊與共享記憶體|600](assets/numba-cuda-puzzles-1/file-20260527161642216.png)
+![區塊與共享記憶體|600](assets/numba-cuda-puzzles-1/file-20260527161642216.jpg)
 #### 網格 (Grids)
 最後，多個區塊的組合就稱為網格 (同樣支援 1D、2D 與 3D 結構)，其中每個區塊的大小都相同，且都有各自的共享記憶體：
-![網格與相對應的常數|500](assets/numba-cuda-puzzles-1/file-20260527161804635.png)
+![網格與相對應的常數|500](assets/numba-cuda-puzzles-1/file-20260527161804635.jpg)
 同樣地，為了要指派任務給特定的執行緒，我們必須知道它在網格中的位置，而且這個位置必須是網格中獨一無二的索引值，因此將計算方式定義如下 (假設我們要指定跟阿嬤頂嘴的橘衣阿瑋)：
-![Index 計算方法|800](assets/numba-cuda-puzzles-1/file-20260527161934272.png)
+![Index 計算方法|800](assets/numba-cuda-puzzles-1/file-20260527161934272.jpg)
 之所以將執行緒以網格、區塊這種多維度的方式組織起來，是因為遇到多維度問題時，這麼安排很方便、很直覺。
 舉例來說，當我們想要處理一張 8×8 的圖片時，我們可以用一個 8 x 8 的 2D 區塊，讓每個執行緒負責一個像素，座標自然就對應上了。
 當然，多維只是一種 "為了方便" 的組織方式，同樣的工作改用其他排列也能做到，只是這麼寫能讓演算法更直覺。
@@ -139,7 +139,7 @@ CUDA (全名是 Compute Unified Device Architecture，統一計算架構) 是由
 > 這也是 Latency 取向的 CPU 與 Throughput 取向的 GPU 分道揚鑣的地方。
 
 下圖為執行緒階層架構與 GPU 硬體資源的對應關係：
-![軟體上的執行緒、區塊、網格 (Grid)，分別對應到硬體上的 CUDA 核心、SM 與整顆 GPU|500](assets/numba-cuda-puzzles-1/file-20260527163807439.png)
+![軟體上的執行緒、區塊、網格 (Grid)，分別對應到硬體上的 CUDA 核心、SM 與整顆 GPU|500](assets/numba-cuda-puzzles-1/file-20260527163807439.jpg)
 ＊Source: [CUDA Refresher: The CUDA Programming Model](https://developer.nvidia.com/blog/cuda-refresher-cuda-programming-model/)
 
 要注意的是，這張圖只是階層對應的示意圖，圖中把一個執行緒對到一個 CUDA 核心，並不代表執行緒和核心是靜態的一對一綁定。
@@ -152,12 +152,12 @@ CUDA (全名是 Compute Unified Device Architecture，統一計算架構) 是由
 
 以下圖為例，同樣一支含有 8 個區塊的程式，在只有 4 個 SM 的小 GPU 上，每個 SM 就得各自輪流負責兩個區塊；但換到擁有 8 個 SM 的大 GPU 上，每個 SM 只要負責一個區塊，整體速度就輕鬆快了一倍。
 重點是，這整個過程全交由 GPU 自行調度，我們一行程式碼都不用碰：
-![8 個區塊的程式，在 4-SM 與 8-SM 的 GPU 上各自的分配方式|700](assets/numba-cuda-puzzles-1/file-20260527163852615.png)
+![8 個區塊的程式，在 4-SM 與 8-SM 的 GPU 上各自的分配方式|700](assets/numba-cuda-puzzles-1/file-20260527163852615.jpg)
 ＊Source: [CUDA Refresher: Getting started with CUDA](https://developer.nvidia.com/blog/cuda-refresher-getting-started-with-cuda/)
 
 最後，除了前面提到的區域記憶體與區塊共享記憶體之外，還有一種記憶體是不論哪個區塊的執行緒都能存取的，我們稱之為 **全域記憶體 (Global memory)**。
 而這三種記憶體，其實都能對應到 GPU 上實際的硬體：
-![GPU 的記憶體階層，雖然圖中一併標出了 A100 上各層的實際容量，本文則先聚焦於程式設計時會直接接觸的幾種|700](assets/numba-cuda-puzzles-1/file-20260527163921052.png)
+![GPU 的記憶體階層，雖然圖中一併標出了 A100 上各層的實際容量，本文則先聚焦於程式設計時會直接接觸的幾種|700](assets/numba-cuda-puzzles-1/file-20260527163921052.jpg)
 ＊Source: [CUDA Refresher: The CUDA Programming Model](https://developer.nvidia.com/blog/cuda-refresher-cuda-programming-model/)
 
 - **暫存器 (Registers)**：對應到區域記憶體，是每個執行緒私有、速度最快的儲存空間，由編譯器決定如何最佳化使用。
@@ -189,7 +189,7 @@ def kernel():
     y = cuda.blockIdx.y * cuda.blockDim.y + cuda.threadIdx.y
 ```
 算法挺直覺的，這裡再一次請出頂嘴阿瑋：
-![頂嘴阿瑋之執行緒位置計算|800](assets/numba-cuda-puzzles-1/file-20260527161934272.png)
+![頂嘴阿瑋之執行緒位置計算|800](assets/numba-cuda-puzzles-1/file-20260527161934272.jpg)
 ### 撰寫 Kernel
 複習一下，Kernel 是從 CPU 呼叫、在 GPU 上執行的函式，這個特性使得 Kernel **不能顯式地回傳數值**：所有運算結果都必須寫進 **作為引數傳入的陣列** 裡，就算結果只是一個純量，也得用一個單元素陣列來接住它。
 
@@ -262,7 +262,7 @@ print(out)   # 每個元素都會是 inp 對應位置 + 10
 > 有些部分會在遇到題目時再補充，如果想更深入了解 CUDA 程式設計模型，請參考 [CUDA C programming guide](http://docs.nvidia.com/cuda/cuda-c-programming-guide)！
 
 首先我們以第一題為例，介紹謎題程式碼的大致架構，它主要由三個部分組成：
-![謎題的程式碼架構|800](assets/numba-cuda-puzzles-1/file-20260527164041069.png)
+![謎題的程式碼架構|800](assets/numba-cuda-puzzles-1/file-20260527164041069.jpg)
 - **`xxx_spec(…)`**：範例，等同於前面講的「先假設只在單一個執行緒上執行」的程式碼，也是我們希望 Kernel 做的事，但**這部分只是提示，不能直接呼叫**！
 - **`xxx_test(cuda)`**：答題區域，裡頭會有一些先寫好的程式碼，我們只需要在 `# FILL ME IN` 下方填上答案即可。
 - **其餘部分**：負責定義 Block、執行 Kernel 並將結果視覺化，這部分不需要改動。
@@ -271,13 +271,13 @@ print(out)   # 每個元素都會是 inp 對應位置 + 10
 - **記憶體讀寫次數：**
   這裡會顯示每個執行緒對全域記憶體與共享記憶體的讀寫次數。
   由於全域記憶體是容量大但速度較慢的外接記憶體 (off-chip)，存取時還有額外的開銷，速度比不上共享記憶體這類較快的內建記憶體 (on-chip)，所以答題時提供這個資訊，供我們權衡兩類記憶體的使用：
-![記憶體讀寫報告|600](assets/numba-cuda-puzzles-1/file-20260527164115166.png)
+![記憶體讀寫報告|600](assets/numba-cuda-puzzles-1/file-20260527164115166.jpg)
 - **執行緒的溝通模式視覺化：**
   平行程式設計的關鍵在於執行緒間的協同合作，而正如人與人之間的相處，良好的協作仰賴於溝通 (Communication)。
   在 CUDA 中，這樣的溝通就發生在記憶體裡，因此寫一支 CUDA 程式，基本上就是在設計「任務 (執行緒) 與記憶體之間的對應關係」。
   白話說，就是決定每個執行緒要讀哪些資料、寫到哪裡去，以及怎麼做得有效率。
   題目已經幫我們定義好執行緒階層架構，並畫成漂亮的彩虹小圈圈 (建議每次動手寫之前先執行一次，就能看到執行緒階層架構與輸入、輸出的對應圖像)：
-![執行緒溝通模式視覺化|300](assets/numba-cuda-puzzles-1/file-20260527164135312.png)
+![執行緒溝通模式視覺化|300](assets/numba-cuda-puzzles-1/file-20260527164135312.jpg)
 > [!WARNING] 視覺化的方向
 > 開始解題之前，先打個預防針！
 > 這套習題的視覺化有兩個畫圖慣例要先記住：
@@ -337,16 +337,16 @@ def map_test(cuda):
     return call
 ```
 執行結果如下圖，可以看到每個執行緒 (以顏色做區分) 都從輸入向量 `a` 中取一個元素，加上 10 後寫進輸出向量 `out`：
-![Map 視覺化與讀寫報告|700](assets/numba-cuda-puzzles-1/file-20260527164205638.png)
+![Map 視覺化與讀寫報告|700](assets/numba-cuda-puzzles-1/file-20260527164205638.jpg)
 這裡值得再停下來釐清一下：`a` 和 `out` 原本是 Host (CPU) 上的 NumPy array，但 `CudaProblem` 在背後幫我們把它們搬到了 GPU 上，所以 Kernel 裡的 `a[local_i]`、`out[local_i] = ...` 實際上都是在跟全域記憶體打交道，也就回到前面說的「Numba 會在背後自動幫我們把 Array 在 CPU 與 GPU 之間搬移」這件事。
 
 另外，因為資料和執行緒是 1 對 1 對應，每個執行緒都只需要負責把自己那個位置讀一次、算一算、寫一次就能完成所有運算，因此全域記憶體的讀和寫都各只有 1 次，不能再更少了。
 而 "讀寫次數" 之所以值得在意，是因為前面提過全域記憶體比共享記憶體慢得多，能少碰一次就少一次：
-![可惜 NVIDIA 還沒推出通靈核心，一讀一寫已是肉身極限|400](assets/numba-cuda-puzzles-1/file-20260527164255366.png)
+![可惜 NVIDIA 還沒推出通靈核心，一讀一寫已是肉身極限|400](assets/numba-cuda-puzzles-1/file-20260527164255366.jpg)
 接著執行 `problem.check()` 就能看到通過後的可愛狗狗 GIF：
 ![通過測試的狗狗](assets/numba-cuda-puzzles-1/file-20260528181422740.gif)
 阿！如果寫錯就會看到我們的輸出以及正確答案應該長怎樣：
-![錯誤時的輸出與正解](assets/numba-cuda-puzzles-1/file-20260527164430665.png)
+![錯誤時的輸出與正解](assets/numba-cuda-puzzles-1/file-20260527164430665.jpg)
 ### Puzzle 2 — Zip
 題目要我們實作一個將向量 `a` 與 `b` 每個位置都相加、再把結果寫進 `out` 向量的 Kernel，就像把拉鍊兩端的齒一一對齊扣起來一樣，因此這個操作被稱為 Zip。
 
@@ -361,7 +361,7 @@ def zip_test(cuda):
     return call
 ```
 執行結果如下圖：
-![Zip 視覺化與讀寫報告|700](assets/numba-cuda-puzzles-1/file-20260527164453391.png)
+![Zip 視覺化與讀寫報告|700](assets/numba-cuda-puzzles-1/file-20260527164453391.jpg)
 可以看到每個執行緒都會分別從 `a` 和 `b` 各取一個元素相加 (`a[local_i]`、`b[local_i]`)，所以全域記憶體會被讀 2 次、寫 1 次 (比 Map 多了一次讀取)。
 
 而 "2 讀 1 寫" 就是 Zip 模式的代價：每多一個輸入向量，每條執行緒就得多跑一趟全域記憶體，當輸入有 N 個向量時，全域讀取就會是 N 次。
@@ -374,7 +374,7 @@ def zip_test(cuda):
 而當執行緒比資料多的時候，就得小心讓每筆資料都只由一個執行緒負責就好，不要讓多出來的執行緒拿著超出範圍的 `local_i` 去做 `out[local_i] = ...`，在 Python 裡 Numba 還會給出 `IndexError: index 4 is out of bounds for axis 0 with size 4` 來阻止我們，但在真實的 CUDA/C 環境裡可沒人攔你，那些越界的寫入會直接落到別人的記憶體上，是真的會出事的。
 
 當然，也不是說 `threadIdx` 大於 `size` 的執行緒就一定不能用，硬要派工作給它們也行，只是這樣一來我們就得另外設計索引、把它們的 `local_i` 轉換回 `size` 範圍內的合法位置才行，有點太過反人類了：
-![](assets/numba-cuda-puzzles-1/file-20260529134830454.png)
+![](assets/numba-cuda-puzzles-1/file-20260529134830454.jpg)
 
 所以最直覺、也最省事的做法就是用一個條件子句把超出範圍的執行緒擋掉，讓它們什麼都別做就好，這個小條件就稱為 **守門員 (Guard)**：
 ```python
@@ -387,14 +387,14 @@ def map_guard_test(cuda):
     return call
 ```
 從視覺化結果可以看到我們只用了前 4 個執行緒，後 4 個乖乖待著什麼都不動：
-![Guard 視覺化與讀寫報告|700](assets/numba-cuda-puzzles-1/file-20260527164516987.png)
+![Guard 視覺化與讀寫報告|700](assets/numba-cuda-puzzles-1/file-20260527164516987.jpg)
 別小看這一個小小的 `if`，從這題開始它幾乎會出現在後面每一題裡，只要執行緒和資料對不齊，Guard 拿出來就對了。
-![真的很難忍住用梗圖的衝動|200](assets/numba-cuda-puzzles-1/file-20260529135332002.png)
+![真的很難忍住用梗圖的衝動|200](assets/numba-cuda-puzzles-1/file-20260529135332002.jpg)
 ### Puzzle 4 — Map 2D
 這題是上一題的 2D 版本，因為我們的資料變成二維了，所以區塊最好也跟著安排成二維，這樣每筆資料就能很直覺地用 `(i, j)` 兩個維度的索引去對應，Guard 的寫法也順其自然就好。
 
 這裡題目設計很貼心地想要讓我們複習「執行緒總是會比資料多一些」這件事，所以設定成了 2×2 的資料配上 3×3 的執行緒，但我想這樣鐵定是難不倒聰明的讀者的：
-![2D 版的「執行緒比資料多」，這次 9 個執行緒要去對應 2×2 的 4 個位置|400](assets/numba-cuda-puzzles-1/file-20260527164531348.png)
+![2D 版的「執行緒比資料多」，這次 9 個執行緒要去對應 2×2 的 4 個位置|400](assets/numba-cuda-puzzles-1/file-20260527164531348.jpg)
 ```python
 def map_2D_test(cuda):  
     def call(out, a, size) -> None:  
@@ -408,14 +408,14 @@ def map_2D_test(cuda):
 跟 1D 版本比起來，程式碼基本上只是多了一個 `local_j`，Guard 也跟著多一個條件 (`local_i` 和 `local_j` 都得在範圍內)。
 存取陣列就照 NumPy 習慣 `my_array[i, j]` 來，沒什麼新奇的東西。
 視覺化結果如下：
-![Map 2D 視覺化與讀寫報告|700](assets/numba-cuda-puzzles-1/file-20260527164558276.png)
+![Map 2D 視覺化與讀寫報告|700](assets/numba-cuda-puzzles-1/file-20260527164558276.jpg)
 可以看到只有左上角的 4 個執行緒真的有做事，其它 5 個被 Guard 擋掉，乖乖待著不動，跟上一題 1D Guard 的精神一模一樣，只是擴展到了二維。
 > [!NOTE] 階層架構與容許的數量
 > 在 CUDA 的執行緒階層架構中，一個網格 (Grid) 最多可以是 3 維的區塊 (Block)，而一個區塊也最多可以是 3 維的執行緒 (Thread)。
 > 所以這題的 2D 還只是小 Case，需要的話連 3D 都能直接組出來。
 ### Puzzle 5 — Broadcast
 這題跟第二題 Zip 很類似，都是要把兩個輸入向量相加，差別在於這次兩個輸入的尺寸不一樣，必須用 [Broadcast](https://numpy.org/doc/stable/user/basics.broadcasting.html) 的方式對齊後再相加：
-![Puzzle 5 題目設計示意圖|400](assets/numba-cuda-puzzles-1/file-20260527164613575.png)
+![Puzzle 5 題目設計示意圖|400](assets/numba-cuda-puzzles-1/file-20260527164613575.jpg)
 題目同樣用了 2×2 的資料配上 3×3 的執行緒，所以「執行緒比資料多」這件事跟上一題一樣，Guard 也是照搬就行，這部分我們已經很熟悉了。
 真正要動腦的是怎麼把 `a` 跟 `b` 的元素 **對應到正確的輸出位置**。
 
@@ -431,7 +431,7 @@ def broadcast_test(cuda):
     return call
 ```
 視覺化結果如下：
-![Broadcast 視覺化與讀寫報告|700](assets/numba-cuda-puzzles-1/file-20260527164629358.png)
+![Broadcast 視覺化與讀寫報告|700](assets/numba-cuda-puzzles-1/file-20260527164629358.jpg)
 從讀寫報告上可以看到，每個執行緒讀 2 次、寫 1 次，跟 Zip 一模一樣，這是因為每個執行緒做的事差不多，都是從兩個地方拿值、加起來、寫回去。
 
 但從圖中還能看到一件有趣的事：`a` 的每個元素都被 **兩個不同的執行緒重複讀** 了 (`b` 也一樣)。
@@ -466,7 +466,7 @@ def map_block_test(cuda):
     return call
 ```
 視覺化結果如下：
-![Blocks 視覺化與讀寫報告|700](assets/numba-cuda-puzzles-1/file-20260527164641787.png)
+![Blocks 視覺化與讀寫報告|700](assets/numba-cuda-puzzles-1/file-20260527164641787.jpg)
 可以看到 3 個區塊各自吃下一段連續的元素 (區塊 0 負責 0~3、區塊 1 負責 4~7、區塊 2 負責 8)，彼此不重疊也不互相打擾，最後一個區塊用 Guard 把多出來的執行緒擋掉。
 而這也是 GPU 真正開始發力的時候：這些區塊會被派到不同的 SM 上 **同時開跑**，而不是一個跑完再輪到下一個跑。
 從概念上來看，這裡就是前面所講的 "分進合擊"，以區塊為單位把大問題拆成小問題，每個區塊獨立解掉自己那塊，合起來就是完整答案。
@@ -484,7 +484,7 @@ def map_block2D_test(cuda):
     return call
 ```
 視覺化結果如下，可以很清楚看到我們是怎麼用區塊把一個大矩陣切成幾個小矩陣分頭處理，也能看到 Guard 是怎麼把超出範圍的執行緒擋掉的：
-![Blocks 2D 視覺化與讀寫報告|700](assets/numba-cuda-puzzles-1/file-20260527164657503.png)
+![Blocks 2D 視覺化與讀寫報告|700](assets/numba-cuda-puzzles-1/file-20260527164657503.jpg)
 到這裡我們其實已經把 CUDA 的基本程式設計模型走過一輪了，執行緒、區塊、網格、Guard、全域索引、多區塊的分進合擊。
 下一題開始，真正的好戲才要登場：**共享記憶體**。
 ### Puzzle 8 — Shared
@@ -524,7 +524,7 @@ def shared_test(cuda):
     return call
 ```
 從視覺化可以看到資料先被搬進了共享記憶體，經過一輪同步再被寫回全域記憶體；共享記憶體的讀寫各只有 1 次 (讀寫順序剛好和全域記憶體相反)：
-![Shared 視覺化與讀寫報告|700](assets/numba-cuda-puzzles-1/file-20260527164713111.png)
+![Shared 視覺化與讀寫報告|700](assets/numba-cuda-puzzles-1/file-20260527164713111.jpg)
 > [!NOTE] 進階下一步
 > 這題的重點其實只在展示共享記憶體和 `syncthreads` 怎麼用，真要解這題的話，直接 `out[i] = a[i] + 10` 就過了，根本用不上共享記憶體。
 > 如果對 `syncthreads` 更進階的用法有興趣，可以先去研究官方矩陣乘法的範例 [`fast_matmul`](https://numba.pydata.org/numba-doc/latest/cuda/examples.html#matrix-multiplication)，那邊才是共享記憶體真正能展現威力的地方。

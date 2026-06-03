@@ -4,7 +4,7 @@ description: "Turn a retired Jetson Nano (Ubuntu 18.04) into a securely isolated
 publishDate: 2026-02-22
 updatedDate: 2026-03-06
 coverImage:
-  src: ./assets/jetson-nano-openclaw/cover.png
+  src: ./assets/jetson-nano-openclaw/cover.jpg
   alt: "AI-generated thumbnail of deploying OpenClaw on a Jetson Nano"
 tags: [Jetson Nano, OpenClaw, AI Agent, Bun, Ubuntu]
 pinned: true

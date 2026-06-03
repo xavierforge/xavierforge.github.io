@@ -3,7 +3,7 @@ title: "From github.io to xavierforge.dev: Custom Domain Setup"
 description: The full process of putting a custom domain on an Astro + GitHub Pages personal site — choosing a domain, Cloudflare DNS, CNAME, the HTTPS certificate, and account-level domain verification.
 publishDate: 2026-05-28
 coverImage:
-  src: ./assets/github-pages-custom-domain/cover.png
+  src: ./assets/github-pages-custom-domain/cover.jpg
   alt: Cover
 tags:
   - github-pages
@@ -13,7 +13,7 @@ tags:
   - astro
 draft: false
 pinned: true
-sourceHash: 64c3a0e2804faa78
+sourceHash: efdc0313e8c074bc
 ---
 
 :::caution[AI-translated]
@@ -87,13 +87,13 @@ curl -sL -o /dev/null -w "%{http_code}\n" https://rdap.org/domain/xavierforge.de
 ```
 After confirming `xavierforge.dev` was available, I went straight to [Cloudflare Registrar](https://www.cloudflare.com/products/registrar/) and bought it (okay, fine — you can actually tell whether it's taken just by searching on the web page).
 I strongly recommend buying domains at Cloudflare, because they advertise "renew at cost" — none of those pricing traps where the first year is cheap and the second year fleeces you.
-![Cloudflare Registrar domain lookup — purchase price equals the renewal price (renew at cost)|700](assets/github-pages-custom-domain/file-20260527153033663.png)
+![Cloudflare Registrar domain lookup — purchase price equals the renewal price (renew at cost)|700](assets/github-pages-custom-domain/file-20260527153033663.jpg)
 > [!WARNING] Friendly reminder
 > Once you've paid for a domain registration there's no taking it back, and no refunds, so before you submit, keep your eyes wide open and triple-check the spelling!
 ## Step 2: Configuring DNS in Cloudflare
 After buying the domain, we need to set up DNS so this new nameplate correctly points at the GitHub Pages house.
 Go into the Cloudflare dashboard $\rightarrow$ your domain $\rightarrow$ DNS $\rightarrow$ Records, and get ready to add the following records.
-![The DNS → Records settings page in the Cloudflare dashboard|700](assets/github-pages-custom-domain/file-20260527153033640.png)
+![The DNS → Records settings page in the Cloudflare dashboard|700](assets/github-pages-custom-domain/file-20260527153033640.jpg)
 Note: when you add records shortly, Proxy must be turned off to DNS only (gray cloud). This cloud defaults to **orange (Proxied)**, and you **must remember to click it to gray (DNS only)**.
 That's because, with the orange cloud on, traffic first goes through Cloudflare's own SSL certificate, and GitHub's system can't automatically issue a dedicated Let's Encrypt certificate for our domain — it might even cause an infinite redirect loop due to a conflict between the two SSL modes.
 With the gray cloud set, traffic hits GitHub Pages cleanly and directly, letting GitHub handle certificate issuance entirely.
@@ -249,7 +249,7 @@ curl -sI https://www.xavierforge.dev | grep -Ei "^HTTP/|^location:"
 curl -sI https://xavierforge.github.io/ | grep -Ei "^HTTP/|^location:"
 ```
 If everything is configured correctly, the apex domain will cleanly get `200`, and the two redirect commands after it should print output similar to this:
-![curl check results: apex returns 200, the old github.io 301-redirects to the new domain|600](assets/github-pages-custom-domain/file-20260527153033637.png)
+![curl check results: apex returns 200, the old github.io 301-redirects to the new domain|600](assets/github-pages-custom-domain/file-20260527153033637.jpg)
 Seeing these two lines both dutifully return `301` and point to the new domain — perfect!
 ## Step 5: Account-Level Domain Verification (Preventing Takeover)
 The last step is very important: we need to bind and verify this domain to our own GitHub account.
@@ -257,14 +257,14 @@ Because if you skip this step, then someday if a CNAME record happens to be misc
 There's no public API for this part; you have to dutifully switch to the browser and go through the web UI:
 1. Open the Pages page in your account settings: [https://github.com/settings/pages](https://github.com/settings/pages) (note! this is your "personal account" Settings, not a single repo's Settings).
 2. Click `Verified domains` $\rightarrow$ `Add a domain`, and enter the domain (e.g. `xavierforge.dev`).
-![GitHub personal account Settings → Pages → Verified domains → Add a domain|600](assets/github-pages-custom-domain/file-20260527153033633.png)
+![GitHub personal account Settings → Pages → Verified domains → Add a domain|600](assets/github-pages-custom-domain/file-20260527153033633.jpg)
 3. GitHub gives us a TXT record's info:
-![The domain-verification TXT record GitHub provides (Name and Value)|600](assets/github-pages-custom-domain/file-20260527153033629.png)
+![The domain-verification TXT record GitHub provides (Name and Value)|600](assets/github-pages-custom-domain/file-20260527153033629.jpg)
    - **Name:** `_github-pages-challenge-<GitHub account>`
    - **Value:** a randomly generated token string.
 4. Go back to Cloudflare's DNS settings page and add this TXT record.
    The complete setup should now look like this:
-![The full DNS records configured in Cloudflare, all in one view|500](assets/github-pages-custom-domain/file-20260527153033625.png)
+![The full DNS records configured in Cloudflare, all in one view|500](assets/github-pages-custom-domain/file-20260527153033625.jpg)
 5. After confirming the record has taken effect with `dig` in the terminal, go back to GitHub and hit `Verify`.
    ```bash
    # Check whether the TXT record has propagated on DNS

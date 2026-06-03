@@ -4,7 +4,7 @@ description: Let's play a game and learn how to write CUDA kernels, the algorith
 publishDate: 2024-06-17
 updatedDate: 2026-05-29
 coverImage:
-  src: ./assets/numba-cuda-puzzles-1/cover.png
+  src: ./assets/numba-cuda-puzzles-1/cover.jpg
   alt: Time to learn CUDA meme
 tags:
   - CUDA
@@ -13,7 +13,7 @@ tags:
   - Python
   - 深度學習
 draft: false
-sourceHash: c3a4b399a4680475
+sourceHash: bc1c4f4934a06f15
 ---
 
 :::caution[AI-translated]
@@ -28,10 +28,10 @@ If anything reads oddly or looks wrong, please [leave a comment](#comments) and 
 ## Preface
 While learning deep learning, you'll surely keep seeing the term CUDA pop up in all sorts of environment-setup and installation tutorials. You could say it's been by our side from the very start of the journey, but much like air, even though we know it's important, we don't deeply feel its presence day to day.
 This is mainly because the various deep learning frameworks have already taken care of this part for us (see the figure below), so in practice we rarely get a chance to deal with it directly:
-![All the major frameworks have a CUDA backend (.cu files); TensorFlow's CUDA backend is classified under C++ (.cu.cc files)|800](assets/numba-cuda-puzzles-1/file-20260527162851976.png)
+![All the major frameworks have a CUDA backend (.cu files); TensorFlow's CUDA backend is classified under C++ (.cu.cc files)|800](assets/numba-cuda-puzzles-1/file-20260527162851976.jpg)
 With the rise of LLMs, Diffusion Models, and other large-scale generative models (and NVDA's stock price 📈), the importance of GPU architecture grows by the day, and it's about time we learned some CUDA.
 And when it comes to learning CUDA, we have to mention the puzzle game [GPU Puzzles](https://github.com/srush/GPU-Puzzles), developed by Sasha Rush ([@srush_nlp](https://x.com/srush_nlp)), a guru from Cornell Tech and Hugging Face:
-![GPU Puzzles game](assets/numba-cuda-puzzles-1/file-20260527153511112.png)
+![GPU Puzzles game](assets/numba-cuda-puzzles-1/file-20260527153511112.jpg)
 It offers interactive puzzles that let us learn CUDA's basic concepts while actually writing GPU kernel code, and it visualizes the results so we can build intuition more easily.
 
 Even better, it uses Python's [Numba](https://numba.pydata.org/) library, so you can painlessly get the experience of writing low-level CUDA code without knowing [C](https://www.youtube.com/watch?v=QUuzIjIcUws) (in fact, Numba's syntax is quite close to C++, and I've checked all the hyperlinks in this article, so feel free to click them).
@@ -66,7 +66,7 @@ The code in step 3 is also called a **kernel** — a GPU function launched by th
 
 Note that all of these steps are initiated by the CPU, which is why it's called the Host. As the main controller of the entire computation, besides running its own computations it also has to prepare the data to be computed and dispatch kernels to run on the GPU — super busy!
 In the figure below, the orange text marks the parts the CPU is responsible for. Whether it's sending and receiving data or allocating memory, the GPU can only passively react to the CPU (this is just a fairly basic model — the GPU isn't always quite so passive, but that's beyond the scope of this article):
-![Diagram of how CUDA code works|500](assets/numba-cuda-puzzles-1/file-20260527153939612.png)
+![Diagram of how CUDA code works|500](assets/numba-cuda-puzzles-1/file-20260527153939612.jpg)
 Of course, transferring data between hardware always has a cost, so when designing programs we need to avoid transferring back and forth multiple times as much as possible.
 > [!NOTE] Kernel vs. Device function
 > Note that CUDA programming has another concept that contrasts with the kernel — the **device function**. It refers to a GPU function that can only be called on the Device (by a kernel or another device function) and is executed on the Device.
@@ -88,24 +88,24 @@ Here, the program's parallelism is actually expressed at the moment the threads 
 The most basic component, used to execute code and store a small amount of state. Therefore, each thread has a fixed-size **local memory** at its disposal.
 
 To make this easier to grasp, let's embody a thread as a guy named A-Wei (no idea why, it just feels fitting), with the local memory he can access being a can of beer (in practice we generally use B̷a̷r̷ ̷b̷e̷e̷r̷):
-![Thread and local memory|400](assets/numba-cuda-puzzles-1/file-20260527160831407.png)
+![Thread and local memory|400](assets/numba-cuda-puzzles-1/file-20260527160831407.jpg)
 #### Blocks
 A group of threads is called a block. In programming terms, they represent a group of threads working together to solve a subtask.
 One of the most important details is that each thread can know its own position within the block through a built-in variable predefined by CUDA (`threadIdx`).
 This way, we can explicitly assign each thread the part it's responsible for. This is the actual picture of what we said earlier — "parallelism is expressed when threads are launched": launch a whole bunch of threads at once, then rely on `threadIdx` to let each thread claim its own different piece of data.
-![Block and threadIdx|600](assets/numba-cuda-puzzles-1/file-20260527161157152.png)
+![Block and threadIdx|600](assets/numba-cuda-puzzles-1/file-20260527161157152.jpg)
 As developers, our task is to appropriately define the size of the block so the threads can cooperate to complete the computation.
 But note that CUDA limits the number of threads **within each block** (currently at most 1024 on most GPUs), so sometimes we need multiple blocks to complete a computation.
 In fact, CUDA also supports 2D and 3D blocks. The figure below shows a 2D block, whose width and height are the size of this block:
-![2D block|400](assets/numba-cuda-puzzles-1/file-20260527161403370.png)
+![2D block|400](assets/numba-cuda-puzzles-1/file-20260527161403370.jpg)
 And since different threads often need to share data, threads living in the same block can communicate through **shared memory**.
 Only the threads in that block can read from and write to this fixed-size block of memory. We can embody shared memory as a six-pack of beer (it's absurd, please bear with me):
-![Block and shared memory|600](assets/numba-cuda-puzzles-1/file-20260527161642216.png)
+![Block and shared memory|600](assets/numba-cuda-puzzles-1/file-20260527161642216.jpg)
 #### Grids
 Finally, a combination of multiple blocks is called a grid (which likewise supports 1D, 2D, and 3D structures). Each block within it has the same size, and each has its own shared memory:
-![Grid and the corresponding constants|500](assets/numba-cuda-puzzles-1/file-20260527161804635.png)
+![Grid and the corresponding constants|500](assets/numba-cuda-puzzles-1/file-20260527161804635.jpg)
 Similarly, in order to assign tasks to a specific thread, we must know its position in the grid, and this position must be a unique index within the grid. We therefore define the calculation as follows (suppose we want to designate the orange-shirted A-Wei talking back to grandma):
-![Index calculation method|800](assets/numba-cuda-puzzles-1/file-20260527161934272.png)
+![Index calculation method|800](assets/numba-cuda-puzzles-1/file-20260527161934272.jpg)
 The reason we organize threads in this multi-dimensional way — into grids and blocks — is that when we encounter multi-dimensional problems, this arrangement is convenient and intuitive.
 For example, when we want to process an 8×8 image, we can use an 8×8 2D block, letting each thread handle one pixel, so the coordinates map over naturally.
 Of course, multiple dimensions are just one "for convenience" way of organizing things. The same work could be done with other arrangements; this style just makes the algorithm more intuitive.
@@ -147,7 +147,7 @@ In other words, the GPU doesn't pursue making any single A-Wei work as fast as p
 > This is also where the latency-oriented CPU and the throughput-oriented GPU part ways.
 
 The figure below shows the correspondence between the thread hierarchy and the GPU's hardware resources:
-![Software-side threads, blocks, and grid correspond respectively to hardware-side CUDA cores, SMs, and the whole GPU|500](assets/numba-cuda-puzzles-1/file-20260527163807439.png)
+![Software-side threads, blocks, and grid correspond respectively to hardware-side CUDA cores, SMs, and the whole GPU|500](assets/numba-cuda-puzzles-1/file-20260527163807439.jpg)
 *Source: [CUDA Refresher: The CUDA Programming Model](https://developer.nvidia.com/blog/cuda-refresher-cuda-programming-model/)
 
 Note that this figure is just a schematic of the hierarchical correspondence. The fact that it maps one thread to one CUDA core doesn't mean threads and cores are statically bound one-to-one.
@@ -160,12 +160,12 @@ Precisely because no block is locked to a specific execution order or piece of h
 
 Take the figure below as an example. The same program containing 8 blocks: on a small GPU with only 4 SMs, each SM has to take turns handling two blocks; but on a large GPU with 8 SMs, each SM only needs to handle one block, and the overall speed easily doubles.
 The key point is that this whole process is handled entirely by the GPU's own scheduling — we don't have to touch a single line of code:
-![A program with 8 blocks, and how each is distributed on a 4-SM and an 8-SM GPU|700](assets/numba-cuda-puzzles-1/file-20260527163852615.png)
+![A program with 8 blocks, and how each is distributed on a 4-SM and an 8-SM GPU|700](assets/numba-cuda-puzzles-1/file-20260527163852615.jpg)
 *Source: [CUDA Refresher: Getting started with CUDA](https://developer.nvidia.com/blog/cuda-refresher-getting-started-with-cuda/)
 
 Finally, besides the local memory and block shared memory mentioned earlier, there's another kind of memory that threads of any block can access. We call it **global memory**.
 And these three kinds of memory actually all correspond to real hardware on the GPU:
-![The GPU's memory hierarchy. Although the figure also marks the actual capacities of each layer on an A100, this article focuses for now on the few kinds we directly touch during programming|700](assets/numba-cuda-puzzles-1/file-20260527163921052.png)
+![The GPU's memory hierarchy. Although the figure also marks the actual capacities of each layer on an A100, this article focuses for now on the few kinds we directly touch during programming|700](assets/numba-cuda-puzzles-1/file-20260527163921052.jpg)
 *Source: [CUDA Refresher: The CUDA Programming Model](https://developer.nvidia.com/blog/cuda-refresher-cuda-programming-model/)
 
 - **Registers**: correspond to local memory. They're the fastest storage, private to each thread, and the compiler decides how to optimize their use.
@@ -197,7 +197,7 @@ def kernel():
     y = cuda.blockIdx.y * cuda.blockDim.y + cuda.threadIdx.y
 ```
 The calculation is pretty intuitive. Here, let's bring back our talk-back A-Wei once more:
-![Talk-back A-Wei's thread position calculation|800](assets/numba-cuda-puzzles-1/file-20260527161934272.png)
+![Talk-back A-Wei's thread position calculation|800](assets/numba-cuda-puzzles-1/file-20260527161934272.jpg)
 ### Writing a kernel
 As a recap, a kernel is a function called from the CPU and executed on the GPU. This characteristic means a kernel **cannot explicitly return a value**: all computation results must be written into **an array passed in as an argument**. Even if the result is just a scalar, you have to catch it with a single-element array.
 
@@ -270,7 +270,7 @@ That's just a taste for the reader. In fact, this syntax is already enough for u
 > Some parts will be filled in when we encounter the relevant puzzles. If you want a deeper understanding of the CUDA programming model, please refer to the [CUDA C programming guide](http://docs.nvidia.com/cuda/cuda-c-programming-guide)!
 
 Let's start with the first puzzle as an example to introduce the general structure of the puzzle code. It's mainly composed of three parts:
-![The code structure of a puzzle|800](assets/numba-cuda-puzzles-1/file-20260527164041069.png)
+![The code structure of a puzzle|800](assets/numba-cuda-puzzles-1/file-20260527164041069.jpg)
 - **`xxx_spec(…)`**: an example, equivalent to the "first assume it only executes on a single thread" code mentioned earlier; it's also what we want the kernel to do, but **this part is only a hint and cannot be called directly**!
 - **`xxx_test(cuda)`**: the answer area. It contains some pre-written code, and we just need to fill in our answer below the `# FILL ME IN` line.
 - **The rest**: responsible for defining the block, executing the kernel, and visualizing the results. This part doesn't need to be changed.
@@ -279,13 +279,13 @@ The visualization provides two pieces of information to help us solve the puzzle
 - **Memory read/write counts:**
   This shows how many times each thread reads from and writes to global memory and shared memory.
   Since global memory is large in capacity but slower external (off-chip) memory, with extra overhead when accessing it, it can't match the speed of faster built-in (on-chip) memory like shared memory. So this information is provided during the puzzle to let us weigh the use of the two types of memory:
-![Memory read/write report|600](assets/numba-cuda-puzzles-1/file-20260527164115166.png)
+![Memory read/write report|600](assets/numba-cuda-puzzles-1/file-20260527164115166.jpg)
 - **Visualization of the threads' communication pattern:**
   The key to parallel programming is the cooperation among threads, and just like getting along between people, good collaboration relies on communication.
   In CUDA, this kind of communication happens in memory, so writing a CUDA program is basically designing the "mapping between tasks (threads) and memory."
   In plain terms, it's deciding which data each thread reads, where it writes to, and how to do it efficiently.
   The puzzle has already defined the thread hierarchy for us and drawn it into pretty little rainbow circles (we recommend running it once before you start writing each time, so you can see the picture mapping the thread hierarchy to the input and output):
-![Visualization of the thread communication pattern|300](assets/numba-cuda-puzzles-1/file-20260527164135312.png)
+![Visualization of the thread communication pattern|300](assets/numba-cuda-puzzles-1/file-20260527164135312.jpg)
 > [!WARNING] The orientation of the visualization
 > Before we start solving, here's a heads-up!
 > This set of exercises' visualization has two drawing conventions to keep in mind:
@@ -345,15 +345,15 @@ def map_test(cuda):
     return call
 ```
 The result is shown below. You can see that each thread (distinguished by color) takes one element from the input vector `a`, adds 10, and writes it into the output vector `out`:
-![Map visualization and read/write report|700](assets/numba-cuda-puzzles-1/file-20260527164205638.png)
+![Map visualization and read/write report|700](assets/numba-cuda-puzzles-1/file-20260527164205638.jpg)
 It's worth pausing here to clarify one thing: `a` and `out` were originally NumPy arrays on the Host (CPU), but `CudaProblem` moves them onto the GPU for us behind the scenes. So `a[local_i]` and `out[local_i] = ...` inside the kernel are actually dealing with global memory — which brings us back to what we said earlier, "Numba automatically moves arrays between CPU and GPU behind the scenes."
 
 Additionally, because data and threads correspond 1-to-1, each thread only needs to read its own position once, compute, and write once to complete all the work. Therefore, global memory is read and written exactly once each — it can't get any fewer:
-![Too bad NVIDIA hasn't released a telepathic core yet; one read and one write is the mortal limit|400](assets/numba-cuda-puzzles-1/file-20260527164255366.png)
+![Too bad NVIDIA hasn't released a telepathic core yet; one read and one write is the mortal limit|400](assets/numba-cuda-puzzles-1/file-20260527164255366.jpg)
 Next, running `problem.check()` shows the adorable doggo GIF that appears after passing:
 ![Doggo for passing the test](assets/numba-cuda-puzzles-1/file-20260528181422740.gif)
 Ah! If you got it wrong, you'll see your output along with what the correct answer should look like:
-![Output and correct answer when wrong](assets/numba-cuda-puzzles-1/file-20260527164430665.png)
+![Output and correct answer when wrong](assets/numba-cuda-puzzles-1/file-20260527164430665.jpg)
 ### Puzzle 2 — Zip
 The puzzle asks us to implement a kernel that adds each position of vectors `a` and `b` together and writes the result into the `out` vector — just like aligning and clasping the teeth on both sides of a zipper one by one. That's why this operation is called Zip.
 
@@ -368,7 +368,7 @@ def zip_test(cuda):
     return call
 ```
 The result is shown below:
-![Zip visualization and read/write report|700](assets/numba-cuda-puzzles-1/file-20260527164453391.png)
+![Zip visualization and read/write report|700](assets/numba-cuda-puzzles-1/file-20260527164453391.jpg)
 You can see that each thread takes one element from each of `a` and `b` and adds them (`a[local_i]`, `b[local_i]`), so global memory is read 2 times and written 1 time (one more read than Map).
 
 And "2 reads, 1 write" is the cost of the Zip pattern: for each additional input vector, every thread has to make one more trip to global memory. When there are N input vectors, the global reads will be N times.
@@ -381,7 +381,7 @@ Don't underestimate this difference — it's actually closer to real-world situa
 And when there are more threads than data, we have to be careful to let each piece of data be handled by only one thread, and not let the extra threads take an out-of-range `local_i` and do `out[local_i] = ...`. In Python, Numba will even stop us with an `IndexError: index 4 is out of bounds for axis 0 with size 4`. But in a real CUDA/C environment, no one will stop you — those out-of-bounds writes will land directly on someone else's memory, and things really will go wrong.
 
 Of course, this doesn't mean threads with `threadIdx` greater than `size` can never be used. If you insist on assigning them work, you can, but then we'd have to design a separate index, converting their `local_i` back to a valid position within the `size` range — which is a bit too unintuitive:
-![](assets/numba-cuda-puzzles-1/file-20260529134830454.png)
+![](assets/numba-cuda-puzzles-1/file-20260529134830454.jpg)
 
 So the most intuitive and effortless approach is to use a conditional clause to block off the out-of-range threads, letting them do nothing at all. This little condition is called a **guard**:
 ```python
@@ -394,14 +394,14 @@ def map_guard_test(cuda):
     return call
 ```
 From the visualization, you can see that we only used the first 4 threads, while the last 4 obediently sit still and do nothing:
-![Guard visualization and read/write report|700](assets/numba-cuda-puzzles-1/file-20260527164516987.png)
+![Guard visualization and read/write report|700](assets/numba-cuda-puzzles-1/file-20260527164516987.jpg)
 Don't underestimate this tiny `if` — starting from this puzzle, it appears in almost every puzzle that follows. Whenever threads and data don't line up, just whip out the guard:
-![Really hard to resist the urge to use a meme|200](assets/numba-cuda-puzzles-1/file-20260529135332002.png)
+![Really hard to resist the urge to use a meme|200](assets/numba-cuda-puzzles-1/file-20260529135332002.jpg)
 ### Puzzle 4 — Map 2D
 This puzzle is the 2D version of the previous one. Since our data becomes two-dimensional, the block had better be arranged in two dimensions to match, so that each piece of data can intuitively correspond to a two-dimensional `(i, j)` index, and the guard can be written naturally too.
 
 The puzzle's design thoughtfully wants us to review the fact that "there are always slightly more threads than data," so it's set up as 2×2 data paired with 3×3 threads. But I'm sure this definitely won't stump our clever readers:
-![The 2D version of "more threads than data" — this time 9 threads have to map to the 4 positions of a 2×2|400](assets/numba-cuda-puzzles-1/file-20260527164531348.png)
+![The 2D version of "more threads than data" — this time 9 threads have to map to the 4 positions of a 2×2|400](assets/numba-cuda-puzzles-1/file-20260527164531348.jpg)
 ```python
 def map_2D_test(cuda):  
     def call(out, a, size) -> None:  
@@ -415,14 +415,14 @@ def map_2D_test(cuda):
 Compared to the 1D version, the code basically just adds a `local_j`, and the guard gains one more condition (`local_i` and `local_j` both have to be in range).
 Accessing the array follows the NumPy habit of `my_array[i, j]` — nothing novel here.
 The visualization result is as follows:
-![Map 2D visualization and read/write report|700](assets/numba-cuda-puzzles-1/file-20260527164558276.png)
+![Map 2D visualization and read/write report|700](assets/numba-cuda-puzzles-1/file-20260527164558276.jpg)
 You can see that only the 4 threads in the top-left corner actually do work; the other 5 are blocked by the guard and sit obediently still. It's exactly the same spirit as the 1D Guard in the previous puzzle, just extended to two dimensions.
 > [!NOTE] The hierarchy and the allowed counts
 > In CUDA's thread hierarchy, a grid can be at most a 3-dimensional arrangement of blocks, and a block can also be at most a 3-dimensional arrangement of threads.
 > So the 2D in this puzzle is just a minor case; you could directly assemble even 3D if needed.
 ### Puzzle 5 — Broadcast
 This puzzle is very similar to Puzzle 2, Zip — both add two input vectors together. The difference is that this time the two inputs are of different sizes and must be aligned via [Broadcast](https://numpy.org/doc/stable/user/basics.broadcasting.html) before being added:
-![Diagram illustrating the design of Puzzle 5|400](assets/numba-cuda-puzzles-1/file-20260527164613575.png)
+![Diagram illustrating the design of Puzzle 5|400](assets/numba-cuda-puzzles-1/file-20260527164613575.jpg)
 The puzzle again uses 2×2 data paired with 3×3 threads, so the "more threads than data" thing is the same as the previous puzzle, and the guard is just copied over too — this part we're already very familiar with.
 What really requires thought is how to **map** the elements of `a` and `b` to the correct output positions.
 
@@ -438,7 +438,7 @@ def broadcast_test(cuda):
     return call
 ```
 The visualization result is as follows:
-![Broadcast visualization and read/write report|700](assets/numba-cuda-puzzles-1/file-20260527164629358.png)
+![Broadcast visualization and read/write report|700](assets/numba-cuda-puzzles-1/file-20260527164629358.jpg)
 From the read/write report, you can see that each thread reads 2 times and writes 1 time, exactly the same as Zip. This is because each thread does roughly the same thing — grab values from two places, add them, and write back.
 
 But the figure also shows something interesting: each element of `a` is **read repeatedly by two different threads** (and the same goes for `b`).
@@ -473,7 +473,7 @@ def map_block_test(cuda):
     return call
 ```
 The visualization result is as follows:
-![Blocks visualization and read/write report|700](assets/numba-cuda-puzzles-1/file-20260527164641787.png)
+![Blocks visualization and read/write report|700](assets/numba-cuda-puzzles-1/file-20260527164641787.jpg)
 You can see that the 3 blocks each take in a contiguous segment of elements (block 0 handles 0–3, block 1 handles 4–7, block 2 handles 8), without overlapping or interfering with one another, and the last block uses the guard to block off the extra thread.
 And this is when the GPU truly starts to flex its muscles: these blocks get dispatched to different SMs to **run at the same time**, rather than one finishing before the next takes its turn.
 Conceptually, this is the "Divide & Conquer" mentioned earlier — using the block as the unit to break a big problem into small problems, with each block independently solving its own piece, which combine to form the complete answer.
@@ -491,7 +491,7 @@ def map_block2D_test(cuda):
     return call
 ```
 The visualization result is shown below. You can clearly see how we use blocks to slice a large matrix into several small matrices and process them separately, and also how the guard blocks off the out-of-range threads:
-![Blocks 2D visualization and read/write report|700](assets/numba-cuda-puzzles-1/file-20260527164657503.png)
+![Blocks 2D visualization and read/write report|700](assets/numba-cuda-puzzles-1/file-20260527164657503.jpg)
 By this point, we've actually gone through CUDA's basic programming model once: threads, blocks, grids, guards, global indices, and the multi-block divide-and-conquer.
 Starting with the next puzzle, the real main event takes the stage: **shared memory**.
 ### Puzzle 8 — Shared
@@ -531,7 +531,7 @@ def shared_test(cuda):
     return call
 ```
 From the visualization, you can see that the data is first moved into shared memory, goes through one round of synchronization, and then is written back to global memory; shared memory is read and written exactly once each (the read/write order happens to be the reverse of global memory):
-![Shared visualization and read/write report|700](assets/numba-cuda-puzzles-1/file-20260527164713111.png)
+![Shared visualization and read/write report|700](assets/numba-cuda-puzzles-1/file-20260527164713111.jpg)
 > [!NOTE] An advanced next step
 > The point of this puzzle is really just to demonstrate how to use shared memory and `syncthreads`. To actually solve it, `out[i] = a[i] + 10` directly would pass — you don't need shared memory at all.
 > If you're interested in more advanced uses of `syncthreads`, you can start by studying the official matrix multiplication example [`fast_matmul`](https://numba.pydata.org/numba-doc/latest/cuda/examples.html#matrix-multiplication) — that's where shared memory can truly show its power.

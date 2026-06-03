@@ -3,7 +3,7 @@ title: "2023 Ironman, Finished: Rust + MLOps — Is It Worth It?"
 description: My completion recap and 30-day index for the 2023 iThome Ironman contest — exploring, from a Python user's perspective, whether Rust has a place in MLOps. The series later grew into the book "From Pythonista to Rustacean."
 publishDate: 2023-10-15
 coverImage:
-  src: ./assets/ironman-2023/cover.png
+  src: ./assets/ironman-2023/cover.jpg
   alt: Finish-line sprint, with Ferris taking center stage
 tags:
   - 鐵人賽
@@ -11,7 +11,7 @@ tags:
   - MLOps
   - Python
 draft: false
-sourceHash: bfb7a331c4f64277
+sourceHash: 41fb87e75957a7a3
 ---
 
 :::caution[AI-translated]
@@ -35,11 +35,11 @@ If you'd like a more complete, more up-to-date, more systematic version, your su
 It's the final day — congrats to me for finishing! These 30 days were a lot like generating art with Stable Diffusion: sometimes maddening, sometimes smooth sailing, but either way we grew through the attempts. Here's a heap of finish-line sprint shots, with [Ferris boy](https://www.youtube.com/watch?v=dQw4w9WgXcQ) taking center stage (as in the cover above).
 ## Closing thoughts
 I survived~ I have to say, running it "raw" (no buffer of pre-written posts) is pretty hardcore. Writing this down to remind myself: next time, stockpile some articles, or else...
-![Thoughts on running it raw|300](assets/ironman-2023/file-20260527152916125.png)
+![Thoughts on running it raw|300](assets/ironman-2023/file-20260527152916125.jpg)
 ＊A note to my future self: this is a topical meme — ["You're just like a chawanmushi" — eye contact at a sushi bar sparks a clash](https://www.youtube.com/watch?v=xr8PzQ7qntk&t=5s).
 
 This challenge once again dragged on across two holiday weekends (even though I was the fifth person to sign up, haha), and on top of that my cat needed to see the vet (a healthy little one now, thank heaven, thank earth, [thank fate for letting us meet](https://www.youtube.com/watch?v=Mh5r3aD2iwg&t=23s)). It was genuinely hard to polish the articles to a level I was fully happy with — especially the project part, where I really couldn't spend much time debugging and optimizing, and could only find a way to get the existing code running. That's probably the biggest regret of this challenge:
-![The project regret|300](assets/ironman-2023/file-20260527152916116.png)
+![The project regret|300](assets/ironman-2023/file-20260527152916116.jpg)
 
 I think many contestants can relate to this: there's no end to finishing an article, but the Ironman deadline is midnight (the system standard time at the bottom, UTC+0800, turns red — terrifying). Either way, the work is finished the moment a reader sees it, so I'm grateful to everyone who tuned in — especially those who fearlessly clicked the oddly placed hyperlinks, unsurprisingly found something weird, and still managed a knowing smile. And I didn't expect five more subscribers than last time — many thanks for letting me contribute to the little bell in your top-right corner!
 

@@ -3,7 +3,7 @@ title: "2021 Ironman: My Model Died in a Jupyter Notebook (ಥ﹏ಥ)"
 description: An honorable-mention entry from the 2021 iThome Ironman contest. Starting from the lifecycle of a machine learning product, it walks through the deployment, modeling, data, and scoping stages an ML product goes through from concept to launch, and builds a simple web app along the way.
 publishDate: 2021-10-15
 coverImage:
-  src: ./assets/ironman-2021/cover.png
+  src: ./assets/ironman-2021/cover.jpg
   alt: Honorable Mention cover
 tags:
   - 鐵人賽
@@ -11,7 +11,7 @@ tags:
   - MLOps
   - Python
 draft: false
-sourceHash: abfcf5ce45403696
+sourceHash: 8e456a973cf93348
 ---
 
 :::caution[AI-translated]
@@ -42,7 +42,7 @@ If you're on the busier side, I strongly recommend Willis's series this year, [T
 Finally, thank you to my three children who subscribed — I really didn't expect anyone would do me the honor, haha.
 ## Article index
 The whole series revolves around the "machine learning product lifecycle" diagram below, so I'll organize it here in posting order:
-![Machine learning product lifecycle diagram|600](assets/ironman-2021/file-20260527152912417.png)
+![Machine learning product lifecycle diagram|600](assets/ironman-2021/file-20260527152912417.jpg)
 ＊Image adapted from [Introduction to Machine Learning in Production](https://www.coursera.org/learn/introduction-to-machine-learning-in-production/home/welcome)
 ### 1. Overview
 - [[Day 01] Prologue — Who Killed the Model?](https://ithelp.ithome.com.tw/articles/10265358)
@@ -58,7 +58,7 @@ The whole series revolves around the "machine learning product lifecycle" diagra
 - [[Day 09] Building a Machine Learning Model — The Way Andrew Ng Says To](https://ithelp.ithome.com.tw/articles/10270985)
 - [[Day 10] The Challenge of Hitting Business Metrics — The Fall of Test-Set Performance](https://ithelp.ithome.com.tw/articles/10271734)
 - [[Day 11] Building a Baseline — The First Step of Any ML Project](https://ithelp.ithome.com.tw/articles/10272420)
-![An analogy for why baselines matter](assets/ironman-2021/file-20260527152912331.png)
+![An analogy for why baselines matter](assets/ironman-2021/file-20260527152912331.jpg)
 > Behind the scenes: I really wanted to capture this analogy in a picture, but lacking any drawing ability, I spent ages hunting down this background image and nearly capsized right here, haha.
 - [[Day 12] Error Analysis — Growing Through Mistakes](https://ithelp.ithome.com.tw/articles/10273175)
 - [[Day 13] Data Augmentation — I Want It All.jpg](https://ithelp.ithome.com.tw/articles/10273884)

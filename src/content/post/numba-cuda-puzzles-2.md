@@ -4,7 +4,7 @@ description: 用 GPU Puzzles 第 9～14 題實作池化、內積、一維卷積�
 publishDate: 2024-06-23
 updatedDate: 2026-05-30
 coverImage:
-  src: ./assets/numba-cuda-puzzles-2/cover.png
+  src: ./assets/numba-cuda-puzzles-2/cover.jpg
   alt: 用 Numba 學 CUDA 系列下篇封面
 tags:
   - CUDA
@@ -28,7 +28,7 @@ draft: false
 從 `pool_spec` 的 `out[i] = a[max(i - 2, 0) : i + 1].sum()` 可以看出這題的池化規則是「自己加上前兩個元素」。
 但仔細一想就會發現，這樣每算一個輸出，全域記憶體就得讀 3 次 (`a[max(i-2, 0)]`、`a[max(i-1, 0)]` 和 `a[i]`)。
 如果 `SIZE` 變成幾百萬，那這個讀取量就會非常驚人，這是不好的：
-![就連 Melody 也這麼說！|300](assets/numba-cuda-puzzles-2/file-20260527164931612.png)
+![就連 Melody 也這麼說！|300](assets/numba-cuda-puzzles-2/file-20260527164931612.jpg)
 所以這時候就輪到上一題剛學會的共享記憶體派上用場啦，把資料先一次性搬進共享記憶體，後面要重複用時就到共享記憶體拿就好，不必再去打擾全域記憶體：
 ```python
 TPB = 8
@@ -57,7 +57,7 @@ def pool_test(cuda):
 > 這題用了 `max()`，敏銳的讀者可能會擔心 Numba 不支援，但翻一下 [清單](https://numba.readthedocs.io/en/stable/cuda/cudapysupported.html#built-in-functions) 就會發現 `max()`、`min()`、`abs()` 這類常見內建函式都有支援，可以放心使用。
 
 從視覺化可以看到全域記憶體真的就只有讀寫各一次，剩下都被共享記憶體吃下來了：
-![Pooling 視覺化與讀寫報告|700](assets/numba-cuda-puzzles-2/file-20260527165114438.png)
+![Pooling 視覺化與讀寫報告|700](assets/numba-cuda-puzzles-2/file-20260527165114438.jpg)
 雖然全域記憶體的讀取次數只是從 3 → 1 而已，但要知道這個比例會隨著運算的複雜度被放大。
 舉例來說，如果把池化窗口從 3 拉到 100 (圖像處理裡常見的尺寸)，每個輸出原本得跑 100 趟全域記憶體，搬進共享記憶體之後就只需要 1 趟，「資料盡量待在快的記憶體裡」這條原則的威力也就顯現出來啦。
 ### Puzzle 10 — Dot Product
@@ -93,7 +93,7 @@ def dot_test(cuda):
     return call
 ```
 從視覺化的結果可以看到藍色 (`TPB - 1` 號) 執行緒一個人扛起加總的責任，其它 7 個執行緒在完成自己的乘法之後就閒著，因此 Shared Reads 來到了 8 次：
-![Dot 視覺化與讀寫報告|700](assets/numba-cuda-puzzles-2/file-20260527165217266.png)
+![Dot 視覺化與讀寫報告|700](assets/numba-cuda-puzzles-2/file-20260527165217266.jpg)
 到這裡解答其實就完成了，但這個做法有兩個非常明顯的浪費：
 - **嚴重序列化**：8 個執行緒裡只有 1 個在做加總，其它 7 個都閒著，平行運算的精神蕩然無存。
 - **資料被重複讀**：還記得 Puzzle 5 (Broadcast) 結尾埋的伏筆嗎？在那裡我們說「同一筆資料被多少執行緒重複拿」會放大讀取成本。
@@ -112,7 +112,7 @@ def conv_spec(a, b):
 ```
 可以看出這裡的 `a` 是輸入向量、`b` 是卷積核 (Kernel)，而輸出 `out` 中位置 `i` 的值是透過「將 `b` 的開頭卡在 `a` 的位置 `i`，再把對應元素相乘後加總」得來。
 這個運算可以用下圖表示：
-![1D 卷積示意圖|500](assets/numba-cuda-puzzles-2/file-20260527165257059.png)
+![1D 卷積示意圖|500](assets/numba-cuda-puzzles-2/file-20260527165257059.jpg)
 從圖中可以看到，這題的卷積在卷積核超出 `a` 尾端時會自動補零 (`if i + j < a.shape[0]`)，因此實作這題的關鍵在於正確處理卷積核滑到尾端、超過 `a` 的情況。
 > [!NOTE] 與 CNN 的關係
 > 這裡之所以特別先用圖像來理解題目預期的運算，是因為這題的卷積跟我們在 CNN 裡熟悉的卷積有點不一樣。
@@ -160,13 +160,13 @@ def conv_test(cuda):
 
 這題有兩個測試，第一個是 `TPB` 大於 `a_size` 的簡單情況 (`a` 完全放得進一個區塊的共享記憶體)，`problem.check()` 按下去，輕鬆通過。
 第二個測試則是 `a_size` 大於 `TPB`，所以必須動用多個區塊來分擔，一樣 `problem.check()` 按下去，沒過！
-![收工啦！大家可以回家啦！|300](assets/numba-cuda-puzzles-2/file-20260527165343973.png)
+![收工啦！大家可以回家啦！|300](assets/numba-cuda-puzzles-2/file-20260527165343973.jpg)
 先別收工、別氣餒，身為工程師，我們最愛 Debug 了，深呼吸，來看看錯在哪：
-![錯誤報告|700](assets/numba-cuda-puzzles-2/file-20260527165405092.png)
+![錯誤報告|700](assets/numba-cuda-puzzles-2/file-20260527165405092.jpg)
 只錯三個，而且都是中間幾個位置少算，還不賴，至少不是無腦寫錯，只是有些情境沒考慮到。
 
 從下面的示意圖就能看出問題：當卷積核滑到一個區塊的尾端時，會超出該區塊載入共享記憶體的範圍 (`TPB` 個元素)，但這時候 **`a` 在後面其實還有值**，只是這些值是由 **下一個區塊** 負責載入的，前面的程式碼把這部分當零來算，所以才會少算三個元素：
-![錯誤情況示意圖|500](assets/numba-cuda-puzzles-2/file-20260527162217162.png)
+![錯誤情況示意圖|500](assets/numba-cuda-puzzles-2/file-20260527162217162.jpg)
 知道問題之後，可以從兩個方向解決：
 1. 直接從全域記憶體把缺失的 `a` 讀進來，但這就違背了「把所有東西塞進共享記憶體」的初衷。
 2. 把缺失的 `a` 元素也載進共享記憶體。
@@ -232,7 +232,7 @@ def conv_test(cuda):
 但只要把編號減掉 `b_size`，這群執行緒就能從「`local_i = b_size, b_size+1, ...`」這種偏移的編號，重新編成「`local_i_other = 0, 1, 2, ...`」這種乾淨的順號，等於是讓他們在自己的小世界裡也是從 0 開始數，所有判斷條件跟索引就都能用最直觀的方式寫出來，跟「載入 `a` 到前 `TPB` 個位置」那段的寫法幾乎一模一樣。
 
 最後來看一下視覺化結果，可以注意到 1D Conv (Full) 左邊區塊的 `S0'` 雖然載入了 `a` 向量的第 12 個元素，但它對該區塊負責的 `Out` 並沒有貢獻，這就是前面提到「額外載入的 `a` 不會用到」的安全冗餘：
-![1D Convolution 視覺化與讀寫報告|700](assets/numba-cuda-puzzles-2/file-20260527165637580.png)
+![1D Convolution 視覺化與讀寫報告|700](assets/numba-cuda-puzzles-2/file-20260527165637580.jpg)
 這個解法對全域記憶體的讀寫次數也符合題目要求，讚讚讚！
 ### Puzzle 12 — Prefix Sum
 還記得在 Puzzle 10 結尾埋的伏筆嗎？在那裡我說「派一個執行緒走訪所有元素」這個做法很爛，之後會有更好的演算法，說的就是這題～
@@ -243,21 +243,21 @@ def conv_test(cuda):
 > 嚴格來說，[Prefix Sum](https://en.wikipedia.org/wiki/Prefix_sum) 是指輸出 `out[i] = a[0] + a[1] + ... + a[i]` (每個位置都記錄到目前為止的累加值)，但這題只要最後一個累加值 (整段的和)，所以本質上是 [Reduce sum](https://www.tensorflow.org/api_docs/python/tf/math/reduce_sum) (歸約求和)。
 > 不過要寫出歸約求和最有效率的平行版本，前面那些中間累加值還是會被算出來，因此就索性叫它 Prefix Sum，正好為下一題 (Axis Sum) 鋪路。
 > 沒錯！這裡作者應該是想刺激我們的思考，所以才用了這個名稱，讓我們自行探索有效率的平行化前綴和演算法，就甘心噎。
-> ![我看倒像是藍色的綠豆糕|300](assets/numba-cuda-puzzles-2/file-20260527165706574.png)
+> ![我看倒像是藍色的綠豆糕|300](assets/numba-cuda-puzzles-2/file-20260527165706574.jpg)
 
 而本題演算法的正式名稱是 [Blelloch Algorithm](https://www.cs.cmu.edu/~guyb/papers/Ble93.pdf)，但這題實際上只用了其前半段 Up-Sweep (Reduce) Phase。
 這個演算法之所以能平行化，靠的是 **加法的結合律 (Associative law)**。
 若序列式地加總，計算會長得像 `((a + b) + c) + d`，每一步都要等前一步算完才能繼續，沒辦法平行計算。
 但結合律告訴我們可以把這個計算重組成 `(a + b) + (c + d)`，這樣 `a + b` 跟 `c + d` 就能 **同時** 算啦。
 把這招繼續推下去，每一輪都把要相加的對數減半，原本 $O(N)$ 的時間就會降成 $O(\log N)$：
-![序列式 vs. 平行化歸約求和|550](assets/numba-cuda-puzzles-2/file-20260527165725338.png)
+![序列式 vs. 平行化歸約求和|550](assets/numba-cuda-puzzles-2/file-20260527165725338.jpg)
 > [!NOTE] Up-Sweep 之後還有 Down-Sweep
 > 完整的 Blelloch Algorithm 還需要進行 Down-Sweep 階段才能算出真正完整的 Prefix Sum (每個位置的累加值)，但完整版超出本文範疇，有興趣的孩子請參考 [Chapter 39. Parallel Prefix Sum (Scan) with CUDA](https://developer.nvidia.com/gpugems/gpugems3/part-vi-gpu-computing/chapter-39-parallel-prefix-sum-scan-cuda)。
 
 實作上每一輪都會挑出部分執行緒做相鄰相加，挑選的條件可以寫成 `local_i % stride == 0`，`stride` 從 1 開始、每輪翻倍。
 舉例來說，第一輪 `stride = 1`，所有偶數編號的執行緒 (`local_i = 0, 2, 4, 6`) 動手，把自己跟距離 1 的右邊鄰居加起來；第二輪 `stride = 2`，只剩 `local_i = 0, 4` 動手，加上距離 2 的鄰居；第三輪 `stride = 4`，最後就只剩 `local_i = 0` 動手，加上距離 4 的那個，整段總和就此完成。
 因為 `TPB = 8`，所以三輪就能搞定 ($\log_2 8 = 3$)：
-![Up-Sweep 示意圖|900](assets/numba-cuda-puzzles-2/file-20260529234304168.png)
+![Up-Sweep 示意圖|900](assets/numba-cuda-puzzles-2/file-20260529234304168.jpg)
 把這三輪獨立寫出來，會長這樣 (這還不是最終版，先過渡一下)：
 ```python
 def sum_test(cuda):  
@@ -286,7 +286,7 @@ def sum_test(cuda):
 ```
 其中 `cuda.syncthreads()` 在每一輪結束都要呼叫一次，因為下一輪會去讀上一輪寫進去的結果，沒同步好就會踩到別人的腳趾頭 (Race condition)。
 從視覺化可以看到共享記憶體的數值流向跟示意圖一致：
-![共享記憶體資料流向|600](assets/numba-cuda-puzzles-2/file-20260527165826777.png)
+![共享記憶體資料流向|600](assets/numba-cuda-puzzles-2/file-20260527165826777.jpg)
 不過這版有兩個地方還可以再修一下：
 1. 三輪的 `if` 寫死了，如果 `TPB` 變大就要手動再加 `if`，不通用。
 2. 沒處理 `i >= size` 的情況，如果某個執行緒沒有對應的資料，它在共享記憶體裡的位置會是上次留下來的髒值，加進來就會污染整個結果。
@@ -321,7 +321,7 @@ def sum_test(cuda):
     return call
 ```
 視覺化結果如下：
-![Prefix sum 視覺化與讀寫報告](assets/numba-cuda-puzzles-2/file-20260527165915396.png)
+![Prefix sum 視覺化與讀寫報告](assets/numba-cuda-puzzles-2/file-20260527165915396.jpg)
 雖然這版的 Shared Reads 只比 Puzzle 10 (8 次) 少 1 (變 7 次)，但別小看這 1 次。
 當 `TPB` 變大，序列版本是 $O(\text{TPB})$、Blelloch 是 $O(\log_2 (\text{TPB}))$，到 `TPB = 1024` 時序列版要讀 1024 次，平行版只要 10 次，差距會大得嚇人。
 而且 Blelloch 讓所有執行緒輪番上場、不會閒著，這對 GPU 來說才是更重要的事，畢竟閒置的 GPU 是我們最不想看到的。
@@ -331,7 +331,7 @@ def sum_test(cuda):
 從 `sum_spec` 的 `out[..., j] = a[..., i : i + TPB].sum(-1)` 可以看出題目要的是沿著最後一個軸加總。
 配合這次題目的 `a.shape = (BATCH, SIZE) = (4, 6)`、`out.shape = (BATCH, 1) = (4, 1)`，意思就是「把每一列的 6 個元素加總成一個值」。
 這裡把題目初始的視覺化加上 4 條彩色框框，以幫助理解：
-![沿軸進行加總|500](assets/numba-cuda-puzzles-2/file-20260527170320795.png)
+![沿軸進行加總|500](assets/numba-cuda-puzzles-2/file-20260527170320795.jpg)
 > [!WARNING] 視覺化的方向
 > 還記得第一篇開頭警告過 GPU Puzzles 的 2D 視覺化跟 NumPy print 視角差一個轉置嗎？
 > 這題就是其中一個例子，NumPy 視角下 `a` 是 4 Row × 6 Col，但視覺化會把它畫成 6 Row × 4 Col (`threadIdx.x` 走水平、`threadIdx.y` 走垂直)，所以圖上看到的 4 條垂直彩色欄，實際上對應的是 NumPy 視角下 `a` 的 4 Row。
@@ -373,7 +373,7 @@ def axis_sum_test(cuda):
 其中最關鍵的就是 `batch`，它讓每個區塊都知道要負責哪一 Row，剩下都是 Puzzle 12 的延伸。
 
 視覺化結果如下 (這裡因為版面關係，放兩個區塊而已)，可以看到 Block 的索引值是 `(0, 0)`、`(0, 1)`、`(0, 2)`、`(0, 3)`，對應的正是 `batch` 所代表的 `blockIdx.y`：
-![Axis sum 視覺化與讀寫報告|700](assets/numba-cuda-puzzles-2/file-20260527170410907.png)
+![Axis sum 視覺化與讀寫報告|700](assets/numba-cuda-puzzles-2/file-20260527170410907.jpg)
 到這裡有個觀察值得我們稍微停下來想想，因為這些區塊之間完全獨立 (各自負責不同的 Row)，它們會被 CUDA 排程器自動派發到不同的 SM 上 **同時** 跑。
 這也是為什麼第一篇講的 "分進合擊" 要把問題切成獨立的小塊，因為 "獨立" 就是平行化最強的保證。
 ### Puzzle 14 — Matrix Multiply！
@@ -417,10 +417,10 @@ def mm_oneblock_test(cuda):
 這段程式碼的重點是迴圈裡那一行 `prod += a_shared[local_i, k] * b_shared[k, local_j]`，對於負責 `out[i, j]` 的執行緒來說，`local_i` 跟 `local_j` 是固定的，靠著 `k` 從 0 跑到 `size - 1`，就把 `a` 的第 `local_i` Row 跟 `b` 的第 `local_j` Col 整條都走過、做完內積。
 
 視覺化的部分這裡只畫紅色執行緒 (設置上使用 `problem.show(sparse=True)`)，不然會太雜：
-![MatMul 簡單情況視覺化與讀寫報告|700](assets/numba-cuda-puzzles-2/file-20260527170508233.png)
+![MatMul 簡單情況視覺化與讀寫報告|700](assets/numba-cuda-puzzles-2/file-20260527170508233.jpg)
 接下來則是比較困難但更常見的情況 — 矩陣尺寸比共享記憶體尺寸還要大。
 以此題來說，共享記憶體只有 `TPB × TPB`，所以當矩陣超出這個大小時，就沒辦法一次把整個 `a` 跟 `b` 裝進去，必須改用分塊載入的方式，把 `a` 跟 `b` 拆成一塊一塊輪流載入共享記憶體，並把每一塊算出來的部分內積累加起來，跑完所有塊之後 `prod` 就是完整的內積值：
-![疊代更新共享記憶體以處理較大的輸入資料|500](assets/numba-cuda-puzzles-2/file-20260527170531057.png)
+![疊代更新共享記憶體以處理較大的輸入資料|500](assets/numba-cuda-puzzles-2/file-20260527170531057.jpg)
 從上圖可以看到，計算 `out[i, j]` 需要 `a` 第 `i` Row 的整條跟 `b` 第 `j` Col 的整條做內積，但因為兩條都裝不進共享記憶體，所以必須拆成「載入 `a` 的一段 + `b` 的一段 → 算這段的內積 → 累加到 `prod` → 再載下一段」這樣疊代地將局部內積累積到總和的流程：
 ```python
 TPB = 3  
@@ -468,7 +468,7 @@ def mm_oneblock_test(cuda):
 所以載入 `a` 時 Row 固定用 `i`、Col 跟著 `b_j` 跑；載入 `b` 時 Row 跟著 `b_i` 跑、Col 固定用 `j`。
 
 困難的測試案例使用了 8×8 矩陣，搭配 3×3 個尺寸為 3×3 的區塊處理，這裡只放第一個與最後一個區塊的運算視覺化，其餘部分可依此類推：
-![MatMul 困難情況視覺化與讀寫報告|900](assets/numba-cuda-puzzles-2/file-20260527170617305.png)
+![MatMul 困難情況視覺化與讀寫報告|900](assets/numba-cuda-puzzles-2/file-20260527170617305.jpg)
 可以看到這裡只花了 6 次的全域記憶體讀取，已經是符合題目要求的做法了！
 > [!NOTE] 真實世界的矩陣乘法
 > 還記得 Puzzle 8 結尾提到的 [`fast_matmul`](https://numba.pydata.org/numba-doc/latest/cuda/examples.html#matrix-multiplication) 嗎？這題其實就是它的精簡版！
@@ -476,7 +476,7 @@ def mm_oneblock_test(cuda):
 > 也就是說，把這題啃下來，就等於摸到了現代深度學習底層加速的門檻，從這裡再往下挖，就是 NVIDIA 工程師月薪七位數的世界了 🤑 (開玩笑的)。
 ## 結語
 恭喜各位看到這裡的小朋友，我們一起完成了 14 個謎題，從最基本的 Map、Zip 出發，一路走過 Guard、多區塊、共享記憶體，最後打通了卷積、平行歸約、矩陣乘法。
-![2026 重製版超帥氣知識增加了梗圖|500](assets/numba-cuda-puzzles-2/cover.png)
+![2026 重製版超帥氣知識增加了梗圖|500](assets/numba-cuda-puzzles-2/cover.jpg)
 而支撐這趟旅程的核心心法，其實就只有以下幾條：
 - **每筆資料配一個執行緒**：先想單一個執行緒要做什麼，再讓硬體幫我們開出一大堆同時跑。
 - **執行緒比資料多就用 Guard 擋掉**：避免越界，也避免某些執行緒拿髒值來污染運算。
@@ -492,7 +492,7 @@ def mm_oneblock_test(cuda):
 - **[CUTLASS](https://github.com/NVIDIA/cutlass)**：NVIDIA 自家的高效能矩陣乘法函式庫原始碼，看完保證對 Puzzle 14 的「進階版」充滿敬意。
 
 最後，各位阿瑋大軍，辛苦了！我們下次見啦～
-![Peace out|500](assets/numba-cuda-puzzles-2/file-20260527170803068.png)
+![Peace out|500](assets/numba-cuda-puzzles-2/file-20260527170803068.jpg)
 ## 參考資料
 - [Chapter 39. Parallel Prefix Sum (Scan) with CUDA](https://developer.nvidia.com/gpugems/gpugems3/part-vi-gpu-computing/chapter-39-parallel-prefix-sum-scan-cuda)
 - [Blelloch Scan — Intro to Parallel Programming](https://www.youtube.com/watch?v=mmYv3Haj6uc)

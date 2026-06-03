@@ -3,7 +3,7 @@ title: 2023 鐵人賽完賽｜Rust 加 MLOps，你說有沒有搞頭？
 description: 2023 iThome 鐵人賽完賽心得與 30 天文章總索引：從一個 Python 使用者的視角，探索 Rust 在 MLOps 中有沒有搞頭，本系列後來延伸成書《從 Pythonista 到 Rustacean》。
 publishDate: 2023-10-15
 coverImage:
-  src: ./assets/ironman-2023/cover.png
+  src: ./assets/ironman-2023/cover.jpg
   alt: 完賽衝線圖，中間 C 位是 Ferris
 tags:
   - 鐵人賽
@@ -27,11 +27,11 @@ draft: false
 今天最後一天啦，恭喜自己完賽，這 30 天就跟用 Stable diffusion 畫圖一樣，有時候很崩潰，有時候很順遂 (單押)，但無論如何，我們都在嘗試中成長了，附上大量衝線圖，中間 C 位是 [Ferris boy](https://www.youtube.com/watch?v=dQw4w9WgXcQ)（如上方封面）。
 ## 完賽心得
 存活下來啦～ 不得不說，裸跑真的是滿精實的，先寫在這裡提醒自己下次記得囤點文章，不然...
-![裸跑心得|300](assets/ironman-2023/file-20260527152916125.png)
+![裸跑心得|300](assets/ironman-2023/file-20260527152916125.jpg)
 ＊提醒未來的自己這是時事梗，[「你就像茶碗蒸」 壽司店對到眼 引爆衝突](https://www.youtube.com/watch?v=xr8PzQ7qntk&t=5s)
 
 這次挑戰依然拖到了跨越兩個連假 (雖然我是第五個報名的哈哈哈)，還遇到了貓貓需要看醫生 (目前已經是健康寶寶了，感謝天，感謝地，[感謝命運讓我們相遇](https://www.youtube.com/watch?v=Mh5r3aD2iwg&t=23s))，真的很難把文章完善到自己完全滿意的程度，尤其是專案的部分，實在沒辦法花太多時間去 Debug 與優化，只能先想辦法讓現有的程式運作起來就好，這大概是這次挑戰最遺憾的地方：
-![專案遺憾|300](assets/ironman-2023/file-20260527152916116.png)
+![專案遺憾|300](assets/ironman-2023/file-20260527152916116.jpg)
 
 我想很多挑戰者都能有感觸的一點就是，文章沒有完成的盡頭，但鐵人賽 12 點前要交 (那個最下面的系統標準時間 UTC+0800 會變成紅色的，嚇死人)，無論如何，作品在讀者看到的時候就完成了，所以很感謝願意收看的孩子們，尤其感謝放心點開位置很奇怪的超連結然後不意外地發現奇怪的東西也可以會心一笑的孩子，而且沒想到這次比上次多了五個人訂閱，真是萬分感謝讓我為您右上角的小鈴鐺貢獻！
 

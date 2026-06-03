@@ -4,7 +4,7 @@ description: Use GPU Puzzles 9–14 to implement pooling, dot product, 1D convol
 publishDate: 2024-06-23
 updatedDate: 2026-05-30
 coverImage:
-  src: ./assets/numba-cuda-puzzles-2/cover.png
+  src: ./assets/numba-cuda-puzzles-2/cover.jpg
   alt: Cover for Part 2 of the Learn CUDA with Numba series
 tags:
   - CUDA
@@ -13,7 +13,7 @@ tags:
   - Python
   - 深度學習
 draft: false
-sourceHash: c9de3da0cdf53f70
+sourceHash: a7d20bf38ef60da9
 ---
 
 :::caution[AI-translated]
@@ -36,7 +36,7 @@ This puzzle asks us to implement the pooling operation, one of the very common o
 From `pool_spec`'s `out[i] = a[max(i - 2, 0) : i + 1].sum()` we can see that this puzzle's pooling rule is "yourself plus the previous two elements."
 But on closer thought you'll realize that with this, every output computed requires 3 reads from global memory (`a[max(i-2, 0)]`, `a[max(i-1, 0)]`, and `a[i]`).
 If `SIZE` were to become a few million, the read volume would be staggering, which is bad:
-![Even Melody says so!|300](assets/numba-cuda-puzzles-2/file-20260527164931612.png)
+![Even Melody says so!|300](assets/numba-cuda-puzzles-2/file-20260527164931612.jpg)
 So this is where the shared memory we just learned in the previous puzzle comes into play. We move the data into shared memory once, and whenever we need to reuse it later we just grab it from shared memory, without having to bother global memory again:
 ```python
 TPB = 8
@@ -65,7 +65,7 @@ It's worth noting that even though there's only one block here, and the length o
 > This puzzle uses `max()`, and sharp-eyed readers may worry that Numba doesn't support it, but a quick look at the [list](https://numba.readthedocs.io/en/stable/cuda/cudapysupported.html#built-in-functions) reveals that common built-ins like `max()`, `min()`, and `abs()` are all supported, so you can use them with confidence.
 
 From the visualization you can see that global memory really is read and written just once each, with everything else absorbed by shared memory:
-![Pooling visualization and read/write report|700](assets/numba-cuda-puzzles-2/file-20260527165114438.png)
+![Pooling visualization and read/write report|700](assets/numba-cuda-puzzles-2/file-20260527165114438.jpg)
 Although the number of global-memory reads only drops from 3 → 1, you should know that this ratio gets amplified as the computation grows more complex.
 For example, if we widen the pooling window from 3 to 100 (a common size in image processing), each output would originally require 100 trips to global memory, but after moving into shared memory it only needs 1 trip. The power of the principle "keep data in fast memory as much as possible" then becomes apparent.
 ### Puzzle 10 — Dot Product
@@ -101,7 +101,7 @@ def dot_test(cuda):
     return call
 ```
 From the visualization you can see the blue thread (number `TPB - 1`) single-handedly shouldering the responsibility of the summation, while the other 7 threads sit idle after finishing their own multiplications, so Shared Reads reaches 8:
-![Dot visualization and read/write report|700](assets/numba-cuda-puzzles-2/file-20260527165217266.png)
+![Dot visualization and read/write report|700](assets/numba-cuda-puzzles-2/file-20260527165217266.jpg)
 At this point the solution is actually done, but this approach has two very obvious wastes:
 - **Severe serialization**: Out of the 8 threads, only 1 is doing the summation while the other 7 sit idle, with the spirit of parallel computation gone entirely.
 - **Data read repeatedly**: Remember the foreshadowing planted at the end of Puzzle 5 (Broadcast)? There we said that "how many threads repeatedly grab the same piece of data" amplifies the read cost.
@@ -120,7 +120,7 @@ def conv_spec(a, b):
 ```
 We can see that here `a` is the input vector, `b` is the convolution kernel, and the value at position `i` in the output `out` is obtained by "anchoring the start of `b` at position `i` in `a`, then multiplying corresponding elements and summing them."
 This operation can be illustrated by the figure below:
-![1D convolution diagram|500](assets/numba-cuda-puzzles-2/file-20260527165257059.png)
+![1D convolution diagram|500](assets/numba-cuda-puzzles-2/file-20260527165257059.jpg)
 From the figure you can see that this puzzle's convolution automatically pads with zeros when the kernel extends past the end of `a` (`if i + j < a.shape[0]`), so the key to implementing this puzzle is correctly handling the case where the kernel slides to the end and goes beyond `a`.
 > [!NOTE] Relationship to CNNs
 > The reason we deliberately use a figure first to understand the operation the puzzle expects is that this puzzle's convolution is a little different from the convolution we're familiar with in CNNs.
@@ -168,13 +168,13 @@ To avoid having all threads swarm in to move the kernel (`b` only has `b_size` e
 
 This puzzle has two tests. The first is the simple case where `TPB` is larger than `a_size` (`a` fits entirely into one block's shared memory); press `problem.check()` and it passes easily.
 The second test is where `a_size` is larger than `TPB`, so we have to mobilize multiple blocks to share the work; likewise press `problem.check()`, and it doesn't pass!
-![Time to wrap up! Everyone can go home!|300](assets/numba-cuda-puzzles-2/file-20260527165343973.png)
+![Time to wrap up! Everyone can go home!|300](assets/numba-cuda-puzzles-2/file-20260527165343973.jpg)
 Don't wrap up just yet, and don't get discouraged; as engineers, we love debugging the most. Take a deep breath and let's see where it went wrong:
-![Error report|700](assets/numba-cuda-puzzles-2/file-20260527165405092.png)
+![Error report|700](assets/numba-cuda-puzzles-2/file-20260527165405092.jpg)
 Only three are wrong, and they're all middle positions that came up short, not bad. At least it's not a clueless blunder; it's just that some situations weren't considered.
 
 The diagram below makes the problem clear: when the kernel slides to the end of a block, it goes beyond the range that block loaded into shared memory (`TPB` elements), but at this point **`a` actually still has values afterward**, it's just that these values are loaded by **the next block**. The earlier code treated this part as zero, which is why three elements came up short:
-![Diagram of the error case|500](assets/numba-cuda-puzzles-2/file-20260527162217162.png)
+![Diagram of the error case|500](assets/numba-cuda-puzzles-2/file-20260527162217162.jpg)
 Once we know the problem, we can solve it from two directions:
 1. Read the missing `a` directly from global memory, but this would betray our original intent of "stuffing everything into shared memory."
 2. Load the missing `a` elements into shared memory too.
@@ -240,7 +240,7 @@ If we don't shift and just use the original `local_i` to evaluate the conditions
 But once we subtract `b_size` from the numbering, this group of threads can go from the offset numbering "`local_i = b_size, b_size+1, ...`" to a clean sequential numbering "`local_i_other = 0, 1, 2, ...`," which is equivalent to letting them also count from 0 in their own little world, so all the conditions and indices can be written in the most intuitive way, almost identical to the way the "load `a` into the first `TPB` positions" section was written.
 
 Finally, let's look at the visualization result. Notice that although `S0'` in the left block of 1D Conv (Full) loaded the 12th element of vector `a`, it doesn't contribute to the `Out` that block is responsible for; this is the safety redundancy of "the extra-loaded `a` not being used" mentioned earlier:
-![1D Convolution visualization and read/write report|700](assets/numba-cuda-puzzles-2/file-20260527165637580.png)
+![1D Convolution visualization and read/write report|700](assets/numba-cuda-puzzles-2/file-20260527165637580.jpg)
 This solution's number of global-memory reads and writes also meets the puzzle's requirement. Great, great, great!
 ### Puzzle 12 — Prefix Sum
 Remember the foreshadowing planted at the end of Puzzle 10? There I said the approach of "dispatching one thread to traverse all elements" was terrible, and that there would be a better algorithm later — that's this puzzle!
@@ -251,21 +251,21 @@ For example, if `TPB = 8` and the length of `a` is 16, one block can't hold it, 
 > Strictly speaking, [Prefix Sum](https://en.wikipedia.org/wiki/Prefix_sum) refers to the output `out[i] = a[0] + a[1] + ... + a[i]` (each position recording the running total so far), but this puzzle only needs the last running total (the sum of the whole segment), so it's essentially [Reduce sum](https://www.tensorflow.org/api_docs/python/tf/math/reduce_sum).
 > However, to write the most efficient parallel version of reduce-sum, those intermediate running totals still get computed along the way, so it's simply called Prefix Sum, which conveniently sets up the next puzzle (Axis Sum).
 > That's right! The author here was probably trying to provoke our thinking, which is why they used this name, letting us explore the efficient parallelized prefix-sum algorithm on our own. How considerate.
-> ![To me it looks more like blue mung-bean cake|300](assets/numba-cuda-puzzles-2/file-20260527165706574.png)
+> ![To me it looks more like blue mung-bean cake|300](assets/numba-cuda-puzzles-2/file-20260527165706574.jpg)
 
 The formal name of this puzzle's algorithm is the [Blelloch Algorithm](https://www.cs.cmu.edu/~guyb/papers/Ble93.pdf), but this puzzle actually only uses its first half, the Up-Sweep (Reduce) Phase.
 The reason this algorithm can be parallelized is the **associative law of addition**.
 If we sum sequentially, the computation looks like `((a + b) + c) + d`, where each step has to wait for the previous one to finish, with no way to compute in parallel.
 But the associative law tells us we can reorganize this computation into `(a + b) + (c + d)`, so that `a + b` and `c + d` can be computed **simultaneously**.
 Pushing this trick further, each round halves the number of pairs to add, and the original $O(N)$ time drops to $O(\log N)$:
-![Sequential vs. parallelized reduce-sum|550](assets/numba-cuda-puzzles-2/file-20260527165725338.png)
+![Sequential vs. parallelized reduce-sum|550](assets/numba-cuda-puzzles-2/file-20260527165725338.jpg)
 > [!NOTE] After Up-Sweep comes Down-Sweep
 > The complete Blelloch Algorithm also requires a Down-Sweep phase to compute the truly complete Prefix Sum (the running total at each position), but the full version is beyond the scope of this article. Kids who are interested, please refer to [Chapter 39. Parallel Prefix Sum (Scan) with CUDA](https://developer.nvidia.com/gpugems/gpugems3/part-vi-gpu-computing/chapter-39-parallel-prefix-sum-scan-cuda).
 
 In implementation, each round selects some threads to do adjacent additions, and the selection condition can be written as `local_i % stride == 0`, where `stride` starts at 1 and doubles each round.
 For example, in the first round `stride = 1`, all even-numbered threads (`local_i = 0, 2, 4, 6`) get to work, adding themselves to their right neighbor at distance 1; in the second round `stride = 2`, only `local_i = 0, 4` remain at work, adding the neighbor at distance 2; in the third round `stride = 4`, only `local_i = 0` is left at work, adding the one at distance 4, and the sum of the whole segment is thus complete.
 Because `TPB = 8`, three rounds are enough ($\log_2 8 = 3$):
-![Up-Sweep diagram|900](assets/numba-cuda-puzzles-2/file-20260529234304168.png)
+![Up-Sweep diagram|900](assets/numba-cuda-puzzles-2/file-20260529234304168.jpg)
 Writing these three rounds out individually looks like this (this isn't the final version yet, just a transitional one):
 ```python
 def sum_test(cuda):  
@@ -294,7 +294,7 @@ def sum_test(cuda):
 ```
 Here `cuda.syncthreads()` must be called once at the end of each round, because the next round will read the results written in by the previous round; without proper synchronization you'll step on someone else's toes (a race condition).
 From the visualization you can see the flow of values in shared memory matches the diagram:
-![Flow of data in shared memory|600](assets/numba-cuda-puzzles-2/file-20260527165826777.png)
+![Flow of data in shared memory|600](assets/numba-cuda-puzzles-2/file-20260527165826777.jpg)
 However, there are two places in this version that can still be tidied up:
 1. The three rounds' `if`s are hard-coded; if `TPB` gets bigger you'd have to manually add more `if`s, which isn't general.
 2. It doesn't handle the case of `i >= size`; if some thread has no corresponding data, its position in shared memory will be a dirty value left over from last time, and adding it in will pollute the entire result.
@@ -329,7 +329,7 @@ def sum_test(cuda):
     return call
 ```
 The visualization result is as follows:
-![Prefix sum visualization and read/write report](assets/numba-cuda-puzzles-2/file-20260527165915396.png)
+![Prefix sum visualization and read/write report](assets/numba-cuda-puzzles-2/file-20260527165915396.jpg)
 Although this version's Shared Reads is only 1 fewer than Puzzle 10 (8 reads → 7 reads), don't underestimate that 1.
 When `TPB` gets bigger, the sequential version is $O(\text{TPB})$ while Blelloch is $O(\log_2 (\text{TPB}))$; by `TPB = 1024` the sequential version reads 1024 times while the parallel version only reads 10 times, a staggering gap.
 Moreover, Blelloch lets all threads take turns coming on stage without sitting idle, which is the more important thing for a GPU; after all, an idle GPU is the last thing we want to see.
@@ -339,7 +339,7 @@ This puzzle does Axis Sum (summation along an axis), equivalent to the version o
 From `sum_spec`'s `out[..., j] = a[..., i : i + TPB].sum(-1)` we can see the puzzle wants summation along the last axis.
 Combined with this puzzle's `a.shape = (BATCH, SIZE) = (4, 6)` and `out.shape = (BATCH, 1) = (4, 1)`, it means "summing the 6 elements of each row into a single value."
 Here I've added 4 colored boxes to the puzzle's initial visualization to aid understanding:
-![Summing along an axis|500](assets/numba-cuda-puzzles-2/file-20260527170320795.png)
+![Summing along an axis|500](assets/numba-cuda-puzzles-2/file-20260527170320795.jpg)
 > [!WARNING] The orientation of the visualization
 > Remember the warning at the start of Part 1 that GPU Puzzles' 2D visualization differs from the NumPy print view by a transpose?
 > This puzzle is one such example. In the NumPy view `a` is 4 Rows × 6 Cols, but the visualization draws it as 6 Rows × 4 Cols (`threadIdx.x` runs horizontally, `threadIdx.y` runs vertically), so the 4 vertical colored columns you see in the figure actually correspond to the 4 Rows of `a` in the NumPy view.
@@ -381,7 +381,7 @@ def axis_sum_test(cuda):
 The most crucial part here is `batch`, which lets each block know which row to handle; the rest is an extension of Puzzle 12.
 
 The visualization result is as follows (here, for layout reasons, only two blocks are shown). You can see the Block index values are `(0, 0)`, `(0, 1)`, `(0, 2)`, `(0, 3)`, which is exactly the `blockIdx.y` that `batch` represents:
-![Axis sum visualization and read/write report|700](assets/numba-cuda-puzzles-2/file-20260527170410907.png)
+![Axis sum visualization and read/write report|700](assets/numba-cuda-puzzles-2/file-20260527170410907.jpg)
 There's an observation here worth pausing to think about: because these blocks are completely independent (each handling a different row), they'll be automatically dispatched by the CUDA scheduler to different SMs to run **simultaneously**.
 This is also why the "divide and conquer" discussed in Part 1 cuts the problem into independent small pieces, because "independence" is the strongest guarantee of parallelization.
 ### Puzzle 14 — Matrix Multiply!
@@ -425,10 +425,10 @@ def mm_oneblock_test(cuda):
 The key point of this code is that one line in the loop: `prod += a_shared[local_i, k] * b_shared[k, local_j]`. For the thread responsible for `out[i, j]`, `local_i` and `local_j` are fixed, and by having `k` run from 0 to `size - 1`, it walks the entire `local_i`-th Row of `a` and the entire `local_j`-th Col of `b` and finishes the dot product.
 
 For the visualization here we only draw the red thread (using `problem.show(sparse=True)` in the setup), otherwise it would be too cluttered:
-![MatMul simple-case visualization and read/write report|700](assets/numba-cuda-puzzles-2/file-20260527170508233.png)
+![MatMul simple-case visualization and read/write report|700](assets/numba-cuda-puzzles-2/file-20260527170508233.jpg)
 Next comes the harder but more common case — when the matrix size is larger than the shared-memory size.
 For this puzzle, shared memory is only `TPB × TPB`, so when the matrix exceeds this size, we can't load all of `a` and `b` at once and must switch to block-wise loading: split `a` and `b` into pieces, loading them into shared memory one at a time, and accumulate the partial dot product computed from each piece; after running through all pieces, `prod` is the complete dot-product value:
-![Iteratively updating shared memory to handle larger input data|500](assets/numba-cuda-puzzles-2/file-20260527170531057.png)
+![Iteratively updating shared memory to handle larger input data|500](assets/numba-cuda-puzzles-2/file-20260527170531057.jpg)
 From the figure above you can see that computing `out[i, j]` requires the dot product of the entire `i`-th Row of `a` and the entire `j`-th Col of `b`, but because neither row nor column fits into shared memory, we have to split it into the flow of "load a segment of `a` + a segment of `b` → compute the dot product of this segment → accumulate into `prod` → then load the next segment," iteratively accumulating the local dot products into the total:
 ```python
 TPB = 3  
@@ -476,7 +476,7 @@ What varies is "which segment of the Row / Col we're currently processing," and 
 So when loading `a`, the Row is fixed at `i` and the Col follows `b_j`; when loading `b`, the Row follows `b_i` and the Col is fixed at `j`.
 
 The hard test case uses an 8×8 matrix, processed with a 3×3 arrangement of 3×3-sized blocks. Here we only show the visualization of the computation for the first and last blocks; the rest can be inferred by analogy:
-![MatMul hard-case visualization and read/write report|900](assets/numba-cuda-puzzles-2/file-20260527170617305.png)
+![MatMul hard-case visualization and read/write report|900](assets/numba-cuda-puzzles-2/file-20260527170617305.jpg)
 You can see this only took 6 global-memory reads, which is already an approach that meets the puzzle's requirement!
 > [!NOTE] Matrix multiplication in the real world
 > Remember the [`fast_matmul`](https://numba.pydata.org/numba-doc/latest/cuda/examples.html#matrix-multiplication) mentioned at the end of Puzzle 8? This puzzle is actually a streamlined version of it!
@@ -484,7 +484,7 @@ You can see this only took 6 global-memory reads, which is already an approach t
 > In other words, chewing through this puzzle is equivalent to touching the threshold of modern deep learning's underlying acceleration; dig further down from here and you're in the world where NVIDIA engineers earn seven-figure monthly salaries 🤑 (just kidding).
 ## Closing
 Congratulations to all the kids who've made it this far. Together we've completed 14 puzzles, starting from the most basic Map and Zip, working through Guard, multiple blocks, and shared memory, and finally breaking through convolution, parallel reduction, and matrix multiplication.
-![2026 remaster super-cool "knowledge increased" meme|500](assets/numba-cuda-puzzles-2/cover.png)
+![2026 remaster super-cool "knowledge increased" meme|500](assets/numba-cuda-puzzles-2/cover.jpg)
 And the core mindset supporting this whole journey is really just the following few items:
 - **One thread per piece of data**: First think about what a single thread needs to do, then let the hardware spin up a whole bunch running simultaneously.
 - **Use a Guard to block off when there are more threads than data**: Avoid going out of bounds, and avoid some threads polluting the computation with dirty values.
@@ -500,7 +500,7 @@ And if you want to take one more step forward, you might consider checking out:
 - **[CUTLASS](https://github.com/NVIDIA/cutlass)**: The source code of NVIDIA's own high-performance matrix-multiplication library; reading it is guaranteed to fill you with respect for the "advanced version" of Puzzle 14.
 
 Finally, to all of you in the Awei army, well done! See you next time~
-![Peace out|500](assets/numba-cuda-puzzles-2/file-20260527170803068.png)
+![Peace out|500](assets/numba-cuda-puzzles-2/file-20260527170803068.jpg)
 ## References
 - [Chapter 39. Parallel Prefix Sum (Scan) with CUDA](https://developer.nvidia.com/gpugems/gpugems3/part-vi-gpu-computing/chapter-39-parallel-prefix-sum-scan-cuda)
 - [Blelloch Scan — Intro to Parallel Programming](https://www.youtube.com/watch?v=mmYv3Haj6uc)
