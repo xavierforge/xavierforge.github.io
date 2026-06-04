@@ -9,7 +9,7 @@ import PageLayout from "@/layouts/Base.astro";
 const projects = (await getCollection("project")).sort((a, b) => a.data.order - b.data.order);
 
 const meta = {
-	description: "Selected projects by ChihYing Yen.",
+	description: "Selected projects by Xavier (Chih-Ying) Yen.",
 	title: "Portfolio",
 	locale: "en" as const,
 	alternates: buildAlternates({

@@ -23,7 +23,7 @@ export const socialLinks: SocialLink[] = [
 	},
 	{
 		friendlyName: "Email",
-		link: "mailto:spacetime0311@gmail.com",
+		link: "mailto:xavier@xavierforge.dev",
 		icon: "mdi:email-outline",
 	},
 ];

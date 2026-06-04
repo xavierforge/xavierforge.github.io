@@ -6,7 +6,6 @@ import SocialList from "@/components/SocialList.astro";
 import { getAllPosts } from "@/data/post";
 import { buildAlternates, localizePath } from "@/i18n";
 import PageLayout from "@/layouts/Base.astro";
-import { siteConfig } from "@/site.config";
 import { collectionDateSort } from "@/utils/date";
 
 const alternates = buildAlternates({
@@ -27,10 +26,21 @@ const pinnedPosts = allPostsByDate
 	.toArray();
 ---
 
-<PageLayout meta={{ title: "Home", locale: "zh-Hant", alternates }}>
+<PageLayout
+	meta={{
+		title: "Home",
+		description:
+			"資料工程師，鍛造 AI Agent、MLOps 工作流，以及 Rust 於 ML 領域的工具。著有《從 Pythonista 到 Rustacean》。",
+		locale: "zh-Hant",
+		alternates,
+	}}
+>
 	<section>
-		<h1 class="title mb-6">Hi, I'm Chih Ying (Xavier)</h1>
-		<p class="mb-4">{siteConfig.description}</p>
+		<h1 class="title mb-6">嗨 陌生人！我是 Xavier (顏志穎)</h1>
+		<p class="mb-4">
+			資料工程師，鍛造 AI Agent、MLOps 工作流，以及 Rust 於 ML 領域的工具。
+		</p>
+		<p class="mb-4">著有《從 Pythonista 到 Rustacean》。</p>
 		<SocialList />
 	</section>
 	{

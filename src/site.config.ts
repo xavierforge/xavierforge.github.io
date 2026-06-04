@@ -4,9 +4,9 @@ import type { AnalyticsConfig, CommentsConfig, SiteConfig } from "@/types";
 export const siteConfig: SiteConfig = {
 	url: "https://xavierforge.dev/",
 	title: "Xavier's Data Forge",
-	author: "ChihYing Yen",
+	author: "Xavier (Chih-Ying) Yen",
 	description:
-		"Rust author and lifelong learner, building and writing at the intersection of systems and ML.",
+		"Data engineer forging AI agents, MLOps pipelines, and Rust tooling for ML. Author of From Pythonista to Rustacean.",
 	// Primary/default locale of the site is Traditional Chinese. Per-page locale
 	// (and og:locale) is overridden on the /en/ routes via SiteMeta.locale.
 	lang: "zh-Hant",
@@ -47,7 +47,7 @@ export const analyticsConfig: AnalyticsConfig = {
 
 export const menuLinks: { path: string; title: string }[] = [
 	{ path: "/", title: "Home" },
-	{ path: "/posts/", title: "Blog" },
+	{ path: "/posts/", title: "Posts" },
 	{ path: "/portfolio/", title: "Portfolio" },
 	{ path: "/about/", title: "About" },
 ];

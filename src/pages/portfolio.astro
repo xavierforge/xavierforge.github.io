@@ -7,7 +7,7 @@ import PageLayout from "@/layouts/Base.astro";
 const projects = (await getCollection("project")).sort((a, b) => a.data.order - b.data.order);
 
 const meta = {
-	description: "Selected projects by ChihYing Yen.",
+	description: "Xavier（顏志穎）的精選作品與專案。",
 	title: "Portfolio",
 	locale: "zh-Hant" as const,
 	alternates: buildAlternates({
