@@ -9,7 +9,8 @@ interface Props {
 
 const { headings } = Astro.props;
 
-const toc = generateToc(headings);
+// Only top-level sections (H2) in the ToC — H3/H4 made it too long on big posts.
+const toc = generateToc(headings, { maxHeadingLevel: 2 });
 ---
 
 <details open class="lg:sticky lg:top-12 lg:order-2 lg:-me-32 lg:basis-64">
