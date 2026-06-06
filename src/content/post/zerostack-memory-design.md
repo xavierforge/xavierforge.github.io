@@ -1,7 +1,7 @@
 ---
 title: "Designing Memory for zerostack: Plain Files, No Vector Store"
 description: A design walkthrough for the memory subsystem I contributed to zerostack, a minimalist Rust coding agent. Surveys what Claude Code, oh-my-pi, memsearch, and opencode-agent-memory do, explains why vectors were declined, and lands on plain-Markdown memory with a search that catches up to vector retrieval for this use case.
-publishDate: 2026-06-07
+publishDate: 2026-06-06
 coverImage:
   src: ./assets/zerostack-memory-design/cover-zerostack-memory.jpg
   alt: zerostack memory subsystem design
