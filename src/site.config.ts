@@ -48,7 +48,8 @@ export const analyticsConfig: AnalyticsConfig = {
 export const menuLinks: { path: string; title: string }[] = [
 	{ path: "/", title: "Home" },
 	{ path: "/posts/", title: "Posts" },
-	{ path: "/portfolio/", title: "Portfolio" },
+	// Portfolio 暫時下架，內容更新後再放回 nav
+	// { path: "/portfolio/", title: "Portfolio" },
 	{ path: "/about/", title: "About" },
 ];
 
