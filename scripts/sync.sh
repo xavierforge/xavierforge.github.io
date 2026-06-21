@@ -42,5 +42,20 @@ rsync -av --delete \
 	--exclude '*.en.md' \
 	"$VAULT_PUBLISHED/" "$DEST/"
 
+# Second pass: pull vault-authored `*.en.md` through WITHOUT --delete.
+#
+# `.en.md` come in two flavours: AI translations that live only in the repo
+# (never the vault), and human-written English whose Chinese companion you also
+# author yourself — that English IS written in the vault. The --delete mirror
+# above excludes `*.en.md` so the repo-only AI translations are never wiped;
+# this no-delete pass copies any `.en.md` that DOES exist in the vault into the
+# repo. Repo-only `.en.md` (absent from the vault) are left untouched because
+# this pass carries no --delete. `-m` prunes empty dirs the filter would create.
+rsync -avm \
+	--include '*/' \
+	--include '*.en.md' \
+	--exclude '*' \
+	"$VAULT_PUBLISHED/" "$DEST/"
+
 echo
 echo "synced: $VAULT_PUBLISHED → $DEST"

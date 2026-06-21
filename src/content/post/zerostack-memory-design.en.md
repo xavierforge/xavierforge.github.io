@@ -13,7 +13,6 @@ tags:
   - Open Source
   - zerostack
 draft: false
-lang: en
 ---
 ## Why I wrote this
 Earlier this May, I was learning [Rig](https://github.com/0xPlaygrounds/rig) with the idea of building a minimal coding agent for some of my own work (something small enough that I could understand every layer of it).
@@ -61,7 +60,7 @@ Before designing memory, the first job is to be precise about what zerostack act
 
 These four choices apply to anything that gets added to zerostack, memory included. For memory in particular, three of them point at the same answer:
 
-**Provider-neutral** rules out any memory layer that quietly assumes an embedding endpoint. Embedding-based retrieval would either hardcode a provider (breaks the abstraction), require a second provider config (config surface explodes), or call whatever the user picked for the main model (which may not be cheap, and the user signed up for one provider, not two).
+**Provider-neutral** rules out any memory layer that quietly assumes an embedding endpoint. Embedding-based retrieval would either hardcode a provider (breaks the abstraction), require a second provider config (config surface explodes, and the user signed up for one provider, not two), or call whatever the user picked for the main model (which may not be cheap).
 
 **Light** rules out anything that holds a vector index in RAM, or that pages one in from disk on demand through a daemon. zerostack has no daemon, and adding one would change its identity as much as adding a database.
 
