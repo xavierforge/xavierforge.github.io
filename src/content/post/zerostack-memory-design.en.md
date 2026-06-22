@@ -2,6 +2,7 @@
 title: "Designing Memory for zerostack: Plain Files, No Vector Store"
 description: A design walkthrough for the memory subsystem I contributed to zerostack, a minimalist Rust coding agent. Surveys what Claude Code, oh-my-pi, memsearch, and opencode-agent-memory do, explains why vectors were declined, and lands on plain-Markdown memory with a search that catches up to vector retrieval for this use case.
 publishDate: 2026-06-06
+updatedDate: 2026-06-22
 coverImage:
   src: ./assets/zerostack-memory-design/cover-zerostack-memory.jpg
   alt: zerostack memory subsystem design
@@ -13,6 +14,7 @@ tags:
   - Open Source
   - zerostack
 draft: false
+sourceHash: e2de2b3c8fa06251
 ---
 ## Why I wrote this
 Earlier this May, I was learning [Rig](https://github.com/0xPlaygrounds/rig) with the idea of building a minimal coding agent for some of my own work (something small enough that I could understand every layer of it).
@@ -119,15 +121,17 @@ The interesting variation is the _split point_: which subset goes into injection
 
 For zerostack, the answer comes from §1: the constraints *Durable*, *Scoped*, *Bounded*, and *Recallable* all coexist only if you have both channels. Pure injection blows the context budget; pure on-demand loses information that the agent should never have to ask for. §4 takes the explicit "two channels" position and works out the split point from there.
 
-[^6]: OpenAI, ["Harness Engineering: leveraging Codex in an agent-first world"](https://openai.com/index/harness-engineering/). The phrasing about what "doesn't exist" is my paraphrase, not their words; their actual point is the more general one that the model acts only on what's in its context window.
+[^6]: OpenAI, ["Harness Engineering: leveraging Codex in an agent-first world"](https://openai.com/index/harness-engineering/).
 #### Literal match vs semantic match
-The second decision is how the agent's query finds the right file. The spectrum runs grep → BM25 → vector → hybrid (BM25 + vector + RRF, often with re-ranking on top).
-- **Claude Code**: grep. A memory tagged "docker-compose port mapping" will not surface for the query "port conflict", because no strings overlap.
+The second decision is how the agent's query finds the right file. The spectrum runs `grep` → BM25 → vector → hybrid (BM25 + vector + RRF, often with re-ranking on top).
+- **Claude Code**: `grep`. A memory tagged "docker-compose port mapping" will not surface for the query "port conflict", because no strings overlap.
 - **omp (Autonomous Memory, the default)**: no retrieval engine at all. The session-start summary tells the model what _paths_ exist, and the model navigates by reading the paths it judges relevant. Retrieval is offloaded to the model's reasoning rather than being done by the harness.[^7]
 - **memsearch**: hybrid. BM25 plus dense vectors fused with Reciprocal Rank Fusion, on top of an embedded Milvus index.
 - **opencode-agent-memory**: split. Memory blocks need no retrieval because they're always in context, and the opt-in journal uses local sentence-transformer embeddings for semantic search.
 
-For zerostack, this is the decision §2 already made: the right half of the spectrum (vector, hybrid) is ruled out by the Light, Provider-neutral, and Dependencies filters. That leaves the left half: grep-class retrieval. The question §5 has to answer is whether the recall cost of staying on the left half is acceptable, and what can be done to soften it without crossing back into the right half.
+For zerostack, this is the decision §2 already made: the right half of the spectrum (vector, hybrid) is ruled out by the Light, Provider-neutral, and Dependencies filters. That leaves the left half: grep-class retrieval.
+
+Staying on the left half and abandoning semantic matching inevitably comes with a recall cost. Whether this cost is acceptable, and what can be done to soften it without crossing back into the right half, are hard problems the subsequent design must face.
 
 [^7]: omp also ships an opt-in `mnemopi` backend with a full hybrid retrieval engine (dense vectors, FTS, lexical scoring with synonym expansion, importance and temporal decay, MMR re-ranking, and query-intent-adapted weights). I'm leaving it out because it's well past what zerostack needs and isn't the default omp experience; the Autonomous Memory description above is what most omp users see.
 #### One-shot vs staged
@@ -137,11 +141,15 @@ The third decision is how much content comes back per retrieval. The two ends:
 
 Staging costs more to design, since it needs two tools instead of one. The payoff is that it separates finding from reading. The finding step can be cheap and lossy, because the model only pays for full retrieval on files it has already decided are worth reading.
 
-zerostack lands on staged. The retrieval surface is `memory_search` (returns ranked candidates with snippets) plus `memory_read` (fetches one file in full). Why this matters more than it looks, and how it reframes what `search` is even _for_, is the centerpiece of §5.
+zerostack lands on staged. The retrieval surface is `memory_search` (returns ranked candidates with snippets) plus `memory_read` (fetches one file in full). This decision actually matters more than it looks, as it fundamentally reframes what search is even for within the system.
 
-Across the three decisions, a pattern shows up. Retrieval design is mostly about deciding which problems to hand to the model and which to keep in the harness. Claude Code hands synonym matching to the model, since grep can't do it, and the model has to retry. omp hands the entire retrieval step to the model: here are the paths, you decide. memsearch keeps almost everything in the harness, because hybrid retrieval is hard, and the model just consumes results. opencode-agent-memory keeps lifecycle in the harness, since blocks update themselves, but hands deep retrieval back to the model through the opt-in semantic journal. Each design is internally consistent, but none of them is portable to zerostack without modification.
+Across the three decisions, a pattern shows up. Retrieval design is mostly about deciding which problems to hand to the model and which to keep in the harness.
 
-What zerostack hands to the model versus keeps in the harness is the actual subject of §5.
+Claude Code hands synonym matching to the model, since `grep` can't do it, and the model has to retry. omp hands the entire retrieval step to the model: here are the paths, you decide. memsearch keeps almost everything in the harness, because hybrid retrieval is hard, and the model just consumes results. opencode-agent-memory keeps lifecycle in the harness, since blocks update themselves, but hands deep retrieval back to the model through the opt-in semantic journal.
+
+Each design is internally consistent, but none of them is portable to zerostack without modification.
+
+As for what zerostack actually hands to the model versus what it keeps in the harness? How to compensate for the recall cost of abandoning semantic matching? And how staged retrieval redefines the very nature of searching? These three core questions, branching from the decisions above, are exactly what §5 will dissect in depth.
 ## 4. Two channels, four tiers
 Before getting to the search problem, there's a structural decision worth naming: memory comes through the agent on two different channels, and they have completely different cost profiles.
 
@@ -228,6 +236,8 @@ The final search keeps the file-based, dependency-free spine, and addresses the 
 5. Among daily logs, newer first
 6. Alphabetical path tiebreak (so results don't depend on `read_dir` order)
 
+One clarification, so this doesn't contradict §4: what `memory_search` matches against is the _full_ `MEMORY.md` on disk (not the copy that injection truncated under the 16 KB cap) and it likewise sweeps all of `notes/` and _every_ daily log, including the older ones that never get auto-injected. So ranking `MEMORY.md` first earns its place precisely when the file is long enough that its injected copy got cut short: this rule is exactly what pulls the dropped global preferences back in. When injection wasn't truncated and `MEMORY.md` already sits in the context window in full, searching it again is indeed redundant, but in zerostack we'd rather swallow that very cheap redundancy than write a special case to exclude already-injected files, which is what keeps it in line with its minimalism.
+
 The reframe in §5.5 already deemphasizes picking "the" best file. What ranking has to do is give truncation a meaningful order, so the files that drop off when output is capped are always the least relevant ones.
 
 **Global output cap with a summary line.** The renderer leads with one summary line. For example:
@@ -261,7 +271,7 @@ Default service bindings and host mappings.
 ```
 The `[matched: …]` tag is the model's signal of _why_ each file ranked where it did, in query order. The summary's `conflict(1)` count is a quiet hint that "conflict" was the rare term. If the model needs more files for that concept specifically, retrying with a different phrasing is the move.
 ## 6. Truncation, or: mechanical guarantees over model promises
-The injection budget is enforced in one place: a single function that takes a string and a byte cap, cuts on a UTF-8 char boundary (so CJK never panics mid-character), and appends `…[memory truncated]`. The same function is used by `context_block`, `read_capped`, and the search renderer.
+The injection budget is enforced in one place: a single function that takes a string and a byte cap, cuts on a UTF-8 char boundary (so CJK never panics mid-character), and appends `…[memory truncated]`. If you look at the codebase, whether it's `context_block`, `read_capped`, or the search renderer, they all rely on this exact same underlying function.
 
 This looks like the dumbest possible context management strategy, and it is, deliberately.
 
