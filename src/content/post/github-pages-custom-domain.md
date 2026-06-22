@@ -12,7 +12,6 @@ tags:
   - cloudflare
   - astro
 draft: false
-pinned: true
 ---
 這陣子趁著把部落格從 Hexo 遷移到 Astro，順手把整個寫作與發布的體驗大翻新了一遍。
 

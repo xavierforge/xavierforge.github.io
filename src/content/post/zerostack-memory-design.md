@@ -13,6 +13,7 @@ tags:
   - Open Source
   - zerostack
 draft: false
+pinned: true
 ---
 ## 為什麼要寫這篇
 今年五月初，我正在學習 [Rig](https://github.com/0xPlaygrounds/rig) (基於 Rust 的 LLM 工作流框架)，心裡盤算著替自己的日常工作打造一個極簡的 coding agent (小到我能把每一層都看懂的那種)。

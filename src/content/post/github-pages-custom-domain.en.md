@@ -12,7 +12,6 @@ tags:
   - cloudflare
   - astro
 draft: false
-pinned: true
 sourceHash: efdc0313e8c074bc
 ---
 
