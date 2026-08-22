@@ -98,7 +98,7 @@ All of `~/Downloads/xavierforge-seo-plan.md` is shipped: **P0** i18n routing, **
 ### Layout split
 
 - `src/layouts/Base.astro` — shell (head, header, footer, theme provider).
-- `src/layouts/BlogPost.astro` — wraps a post with `Masthead` (renders `coverImage` Notion-style on top), TOC, prose body, back-to-top button.
+- `src/layouts/BlogPost.astro` — wraps a post with `Masthead` (renders `coverImage` Notion-style on top), TOC, prose body, back-to-top button. Also mounts `src/components/CopyAttribution.astro`: a `copy`-event script that appends a locale-aware attribution (post URL + comment invite) to the clipboard when a visitor copies post prose. Post pages only (the wording says "文章/post"); it deliberately skips code blocks (`pre`/`code`/`.expressive-code`), input fields, and selections under `MIN_LENGTH` (30) chars. The wording in its `MESSAGES` map was hand-picked by Xavier — don't reword it without asking.
 - `src/pages/index.astro` — homepage. Pinned Posts render with `PinnedPostCard` (thumbnail card grid); the chronological list uses `PostPreview` (text-only row).
 - `src/pages/portfolio.astro` — projects collection, card grid.
 - `src/pages/about.astro` — static About content, **Chinese** prose. The English version is its mirror `src/pages/en/about.astro` (English prose, `locale: "en"`) — see "Bilingual posts + `/en/` URL split". The hero photo uses `astro:assets` `<Image>` (don't revert to a raw `<img src={photo.src}>` — that ships the full-size source, ~4.9 MB, unoptimized).
