@@ -1,0 +1,82 @@
+---
+// Appends an attribution block (author / link / source / copyright notice) to the
+// clipboard when a visitor copies a run of prose from the page. The message follows
+// the page's locale. Copies from code blocks, form fields, and short selections pass
+// through untouched.
+import type { Locale } from "@/i18n";
+import { siteConfig } from "@/site.config";
+
+interface Props {
+	locale: Locale;
+}
+
+const { locale } = Astro.props;
+
+const MESSAGES: Record<Locale, { author: string; link: string; source: string; notice: string }> = {
+	"zh-Hant": {
+		author: "作者：",
+		link: "連結：",
+		source: "來源：",
+		notice: "著作權歸作者所有。非商業轉載請註明出處，商業轉載請先聯絡作者取得授權。",
+	},
+	en: {
+		author: "Author: ",
+		link: "Link: ",
+		source: "Source: ",
+		notice:
+			"All rights reserved by the author. Please credit the source for non-commercial use; contact the author for commercial licensing.",
+	},
+};
+
+const copyright = {
+	...MESSAGES[locale],
+	authorName: siteConfig.author,
+	siteTitle: siteConfig.title,
+};
+---
+
+<script is:inline define:vars={{ copyright }}>
+	// Selections shorter than this copy through untouched, so quoting a phrase or a
+	// technical term doesn't drag the attribution block along.
+	const MIN_LENGTH = 30;
+
+	const insideCode = (node) => {
+		const el = node instanceof Element ? node : node?.parentElement;
+		return Boolean(el?.closest("pre, code, .expressive-code"));
+	};
+
+	document.addEventListener("copy", (event) => {
+		if (!event.clipboardData) return;
+		if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement)
+			return;
+
+		const selection = document.getSelection();
+		if (!selection || selection.isCollapsed) return;
+
+		const text = selection.toString();
+		if (text.trim().length < MIN_LENGTH) return;
+		if (insideCode(selection.anchorNode) || insideCode(selection.focusNode)) return;
+
+		const lines = [
+			copyright.author + copyright.authorName,
+			copyright.link + location.href,
+			copyright.source + copyright.siteTitle,
+			copyright.notice,
+		];
+
+		const fragment = document.createElement("div");
+		for (let i = 0; i < selection.rangeCount; i++) {
+			fragment.appendChild(selection.getRangeAt(i).cloneContents());
+		}
+		const escapeHtml = (value) =>
+			value.replace(
+				/[&<>"]/g,
+				(char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[char],
+			);
+		const htmlBlock = `<br><br><blockquote>${lines.map(escapeHtml).join("<br>")}</blockquote>`;
+
+		event.preventDefault();
+		event.clipboardData.setData("text/plain", `${text}\n\n${lines.join("\n")}`);
+		event.clipboardData.setData("text/html", fragment.innerHTML + htmlBlock);
+	});
+</script>
