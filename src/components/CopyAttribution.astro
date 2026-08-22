@@ -1,0 +1,75 @@
+---
+// Appends a short, friendly attribution (post link + an invitation to comment) to
+// the clipboard when a visitor copies a run of prose from a post. The message
+// follows the page's locale. Copies from code blocks, form fields, and short
+// selections pass through untouched. Mounted per-post in BlogPost.astro (the
+// wording says "文章/post", so it doesn't belong on listing or about pages).
+import type { Locale } from "@/i18n";
+
+interface Props {
+	locale: Locale;
+}
+
+const { locale } = Astro.props;
+
+const MESSAGES: Record<Locale, { intro: string; outro: string }> = {
+	"zh-Hant": {
+		intro: "嗨，這段文字來自 Xavier 的文章：",
+		outro: "歡迎分享與引用，附上連結就好。有想法也歡迎來文章底下留言！",
+	},
+	en: {
+		intro: "Hi! This text is from Xavier's post:",
+		outro:
+			"Feel free to share or quote it with a link back. Thoughts? Leave a comment on the post!",
+	},
+};
+
+const copyright = MESSAGES[locale];
+---
+
+<script is:inline define:vars={{ copyright }}>
+	// Selections shorter than this copy through untouched, so quoting a phrase or a
+	// technical term doesn't drag the attribution block along.
+	const MIN_LENGTH = 30;
+
+	const insideCode = (node) => {
+		const el = node instanceof Element ? node : node?.parentElement;
+		return Boolean(el?.closest("pre, code, .expressive-code"));
+	};
+
+	document.addEventListener("copy", (event) => {
+		if (!event.clipboardData) return;
+		if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement)
+			return;
+
+		const selection = document.getSelection();
+		if (!selection || selection.isCollapsed) return;
+
+		const text = selection.toString();
+		if (text.trim().length < MIN_LENGTH) return;
+		if (insideCode(selection.anchorNode) || insideCode(selection.focusNode)) return;
+
+		const url = location.href;
+
+		const fragment = document.createElement("div");
+		for (let i = 0; i < selection.rangeCount; i++) {
+			fragment.appendChild(selection.getRangeAt(i).cloneContents());
+		}
+		const escapeHtml = (value) =>
+			value.replace(
+				/[&<>"]/g,
+				(char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[char],
+			);
+		const htmlBlock =
+			`<br><br><blockquote>${escapeHtml(copyright.intro)}<br>` +
+			`<a href="${escapeHtml(url)}">${escapeHtml(url)}</a><br>` +
+			`${escapeHtml(copyright.outro)}</blockquote>`;
+
+		event.preventDefault();
+		event.clipboardData.setData(
+			"text/plain",
+			`${text}\n\n${copyright.intro}\n${url}\n${copyright.outro}`,
+		);
+		event.clipboardData.setData("text/html", fragment.innerHTML + htmlBlock);
+	});
+</script>
