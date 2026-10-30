@@ -1,7 +1,7 @@
 ---
 title: "Stanford CME 295 筆記 (1)：從 Attention 重新認識 Transformer"
 description: "Stanford CME 295 第一講的讀書筆記：BPE tokenizer 與特殊 token、word2vec 與 RNN 的瓶頸、Attention 與 self-attention 的 Q/K/V、Decoder 三個 sub-layer，以及 residual、layer norm、masking、multi-head、dropout、label smoothing 這幾個讓 Transformer 練得起來的技巧。"
-publishDate: 2026-10-30
+publishDate: 2026-10-28
 coverImage:
   src: ./assets/cme295-lecture-1-transformers/cover.png
   alt: "Stanford CME 295 Lecture 1：Transformers 封面"
