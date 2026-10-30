@@ -15,6 +15,7 @@ tags:
   - zerostack
 draft: false
 pinned: true
+sourceHash: ae2edddef290f9dd
 ---
 ## Why I wrote this
 Earlier this May, I was learning [Rig](https://github.com/0xPlaygrounds/rig) with the idea of building a minimal coding agent for some of my own work (something small enough that I could understand every layer of it).

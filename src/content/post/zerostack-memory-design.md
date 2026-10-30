@@ -50,14 +50,15 @@ pinned: true
 - **可回憶 (Recallable)**：session 進行到一半要查的時候想得起來。
 - **誠實面對自己的極限 (Honest about its limits)**：這樣模型才不會拿著過期的資訊去做事。
 
-這幾個條件單獨看都很合理，但實際動手實作時就會發現，其中好幾個就根本是互相排斥的，舉例來說，持久儲存跟有限度地注入天生就是對立的：留下來的東西越多，每次 session 要從裡面挑出相關的那一小塊就越難；隔離跟回憶也互相衝突：想像一下模型需要的知識剛好被歸在另一個專案底下；回憶跟「誠實面對極限」也在互相拉扯：想起的越多，就越難標清楚每一筆到底是什麼、又已經放了多久。
+這幾個條件單獨看都很合理，但實際動手實作時就會發現，其中好幾個就根本是互相排斥的。
+舉例來說，持久儲存跟有限度地注入天生就是對立的：留下來的東西越多，每次 session 要從裡面挑出相關的那一小塊就越難；隔離跟回憶也互相衝突：想像一下模型需要的知識剛好被歸在另一個專案底下；回憶跟「誠實面對極限」也在互相拉扯：想起的越多，就越難標清楚每一筆到底是什麼、又已經放了多久。
 
 因此，接下來的設計，本質上就是一連串「每一組衝突該往哪邊讓步」的取捨。
 ## 2. 以 zerostack 的設計哲學作為篩選標準
 在動手設計記憶子系統之前，得先把「zerostack 到底是什麼」講清楚，因為一個子系統適不適合納入專案，完全取決於它與專案其餘部分的契合度。
 而 zerostack 之所以是 zerostack，靠的就是少少幾個核心選擇，當這幾個選擇湊在一起，就決定了哪些東西加得進來、哪些加不進來。
 以下是 zerostack 的設計哲學：
-- **極小 (Small)**：整個 codebase 比同類型 coding agent 大約小 5 到 10 倍[^2]，每一層都是為了「能讓人從頭讀到尾都看得懂」而存在的。
+- **極小 (Small)**：整個 codebase 大約只有同類型 coding agent 的五到十分之一[^2]，每一層都是為了「能讓人從頭讀到尾都看得懂」而存在的。
 - **輕量 (Light)**：RAM 佔用平均落在 16 MB 上下，峰值也才接近 24 MB[^3]，沒有常駐程式、沒有背景行程，整個 agent 就是一支「做完事就退出」的行程。
 - **不挑供應商 (Provider-neutral)**：不管使用者選擇哪一家 LLM 供應商，zerostack 都透過同一套 Rig 介面接上去，不預設 embedding 端點、不要求第二家供應商的設定，也沒有任何寫死的後端。
 - **相依套件都必須證明其存在的價值 (Dependencies earn their weight)**：在 zerostack 中，每一層架構都必須有其存在的必要性，不會因為某個套件或模組是業界標配就盲目堆疊，只有當它創造的效益足以抵銷其維護成本時，才會被納入其中。
@@ -150,7 +151,7 @@ Claude Code 按照檔案類型來切，把死規則與動態筆記分開；omp �
 所以 §4 乾脆挑明了走「雙管道」這條路，並以此為基礎推導出專屬的切分點。
 
 [^6]: OpenAI，["Harness Engineering: leveraging Codex in an agent-first world"](https://openai.com/index/harness-engineering/)。
-#### 字面關鍵字比對 (Lexical) 還是語意搜尋 (Semantic)？
+#### 純字串比對 (Lexical) 還是語意搜尋 (Semantic)？
 第二個決策，在於 agent 的 query 究竟要如何找到正確的檔案。
 這條技術光譜由簡單到複雜分別是 `grep`、BM25、向量搜尋，最後是混合式搜尋 (BM25 + 向量 + RRF，通常上層還會再疊加 re-ranking)。
 - Claude Code 停留在光譜最左端的 `grep`，一筆標記為「docker-compose port mapping」的記憶，在 query 搜尋「port conflict」時是不會出現的，因為兩者沒有任何字串重疊。
@@ -371,7 +372,7 @@ Default service bindings and host mappings.
 在實際的程式碼中，無論是 `context_block`、`read_capped` 還是搜尋結果的 renderer，底層呼叫的全都是這同一支函式。
 
 這套作法乍看之下非常「笨」，簡直就是偷懶到了極點的 context 管理策略，但這確實是我刻意為之的設計。
-正巧，2025 年的一篇論文《[The Complexity Trap](https://arxiv.org/abs/2508.21433)》(副標題為：Simple Observation Masking Is as Efficient as LLM Summarization for Agent Context Management) 正好為這種笨方法提供了學術實證。
+2025 年的一篇論文《[The Complexity Trap](https://arxiv.org/abs/2508.21433)》(副標題為：Simple Observation Masking Is as Efficient as LLM Summarization for Agent Context Management) 正好為這種笨方法提供了學術實證。
 論文團隊做了一個 benchmark：他們把 agent 歷史紀錄裡過時的 tool 輸出，直接替換成類似 `[output omitted — 14,832 chars]` 的佔位符 (placeholder)，並跟「花一次 LLM 呼叫去跑摘要」的作法比對效果。
 不用多說，多數人直覺都會認為摘要法效果更好，畢竟它感覺起來比較高明。
 但論文結論卻完全相反，在多種模型配置下，這個看似偷懶的佔位符做法，表現跟 LLM 摘要幾乎一樣好，甚至還把 context 成本 (相較於送出完整原文) 砍掉了將近一半。
@@ -432,7 +433,7 @@ Default service bindings and host mappings.
 ### 7.3 第二階段重構：導入本機端 Embedding
 如果連加註別名都救不了回憶率，那麼下一步，就是直接走 opencode-agent-memory 與 memsearch 已經驗證過的那條老路：導入本機端的 embedding (例如跑在 CPU 上的 MiniLM 搭配 ONNX runtime)。
 
-這會額外產出一個附掛的向量索引，但底層依然會把 Markdown 檔當作唯一的知識來源 (source of truth)，確保索引隨時都能打掉重練。
+這會額外建立一個附掛的向量索引，但底層依然會把 Markdown 檔當作唯一的知識來源 (source of truth)，確保索引隨時都能打掉重練。
 雖然這條路無可避免會多出約 80 MB 的模型下載量，還得扛上一個沉重的相依套件，但至少守住了「不挑供應商」的底線，也保證使用者的資料絕對不會離開本機。
 
 最重要的是，就算走到這一步，資料的儲存結構也完全不需要改動，我們照樣用原本的 Markdown 檔、同一套內部 `Mem` API，以及一樣的兩階段 search/read 工具設計。
