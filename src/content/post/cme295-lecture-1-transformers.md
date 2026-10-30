@@ -8,6 +8,11 @@ coverImage:
 tags: [Stanford CME 295, Transformer, LLM, 讀書筆記]
 draft: false
 ---
+> [!NOTE] Stanford CME 295 筆記系列
+> 1. **從 Attention 重新認識 Transformer (本篇)**
+> 2. [LLM 的架構選擇，從 BERT、GPT 到 MoE 與 RoPE](/posts/cme295-lecture-2-large-language-models/)
+> 3. [LLM 怎麼訓練，從 Pre-training 到 RLHF、GRPO](/posts/cme295-lecture-3-llm-training/)
+
 ## BPE Tokenizer 與特殊 token
 
 - BPE ([Byte Pair Encoding](https://arxiv.org/abs/1508.07909)) Tokenizer - 先有一組 Vocabulary，再透過訓練把訓練資料常常一起出現的 token 組合成新的 token 直至 vocabulary 達到預先設定的大小，這個方法的好處為 sequence 長度變短，因此能提高模型效率。

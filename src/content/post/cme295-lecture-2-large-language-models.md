@@ -8,6 +8,11 @@ coverImage:
 tags: [Stanford CME 295, Transformer, LLM, 讀書筆記]
 draft: false
 ---
+> [!NOTE] Stanford CME 295 筆記系列
+> 1. [從 Attention 重新認識 Transformer](/posts/cme295-lecture-1-transformers/)
+> 2. **LLM 的架構選擇，從 BERT、GPT 到 MoE 與 RoPE (本篇)**
+> 3. [LLM 怎麼訓練，從 Pre-training 到 RLHF、GRPO](/posts/cme295-lecture-3-llm-training/)
+
 ## 從 BERT 到 GPT
 
 [BERT](https://arxiv.org/abs/1810.04805) (Bidirectional Encoder Representation from Transformers) - Encoder-only，透過 encoded embeddings 來做預測。

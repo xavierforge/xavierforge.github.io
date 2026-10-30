@@ -1,5 +1,5 @@
 ---
-title: "Stanford CME 295 筆記 (3)：LLM 怎麼練，從 Pre-training 到 RLHF 與 GRPO"
+title: "Stanford CME 295 筆記 (3)：LLM 怎麼訓練，從 Pre-training 到 RLHF、GRPO"
 description: "Stanford CME 295 第三講的讀書筆記：transfer learning 與 cross entropy 的第一原理、data mixture、mid-training 與 long-context extension，接著進 post-training：SFT、LoRA、RLHF 的 reward model 與 PPO、DPO 如何把 RLHF 的最佳解寫成閉式，以及 reasoning 模型背後的 GRPO。"
 publishDate: 2026-10-30
 coverImage:
@@ -8,6 +8,11 @@ coverImage:
 tags: [Stanford CME 295, LLM, Post-training, 讀書筆記]
 draft: false
 ---
+> [!NOTE] Stanford CME 295 筆記系列
+> 1. [從 Attention 重新認識 Transformer](/posts/cme295-lecture-1-transformers/)
+> 2. [LLM 的架構選擇，從 BERT、GPT 到 MoE 與 RoPE](/posts/cme295-lecture-2-large-language-models/)
+> 3. **LLM 怎麼訓練，從 Pre-training 到 RLHF、GRPO (本篇)**
+
 ## 遷移學習：從 pre-training 到 fine-tuning
 
 因為 NLP 的許多任務都共享相同的基礎知識 (例如語法、詞義和常識)，與其每個任務都用大量標註資料從頭訓練，不如先學一次通用知識，再轉移到各個具體任務上，也就是所謂的 transfer learning。
