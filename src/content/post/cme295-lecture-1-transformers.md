@@ -12,6 +12,7 @@ draft: false
 > 1. **從 Attention 重新認識 Transformer (本篇)**
 > 2. [LLM 的架構選擇，從 BERT、GPT 到 MoE 與 RoPE](/posts/cme295-lecture-2-large-language-models/)
 > 3. [LLM 怎麼訓練，從 Pre-training 到 RLHF、GRPO](/posts/cme295-lecture-3-llm-training/)
+> 4. [用 RL 訓練 LLM，從 REINFORCE、PPO 到 GRPO](/posts/cme295-lecture-4-rl-with-llms/)
 >
 > 文中示意圖皆取自或重繪自 [Stanford CME 295 課程簡報](https://cme295.stanford.edu/syllabus/)，版權歸原課程所有。
 

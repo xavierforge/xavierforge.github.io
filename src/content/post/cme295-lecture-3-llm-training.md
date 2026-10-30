@@ -12,6 +12,7 @@ draft: false
 > 1. [從 Attention 重新認識 Transformer](/posts/cme295-lecture-1-transformers/)
 > 2. [LLM 的架構選擇，從 BERT、GPT 到 MoE 與 RoPE](/posts/cme295-lecture-2-large-language-models/)
 > 3. **LLM 怎麼訓練，從 Pre-training 到 RLHF、GRPO (本篇)**
+> 4. [用 RL 訓練 LLM，從 REINFORCE、PPO 到 GRPO](/posts/cme295-lecture-4-rl-with-llms/)
 >
 > 文中示意圖皆取自或重繪自 [Stanford CME 295 課程簡報](https://cme295.stanford.edu/syllabus/)，版權歸原課程所有。
 
@@ -101,7 +102,7 @@ Attention 的計算量隨序列長度快速增加，而且長文件在訓練資�
 這個階段有兩個主要難點：
 
 - 難以取得「好的」長文本：天然的長文件本來就少，而且集中在書籍、論文、程式碼等少數類型，更麻煩的是，很多長文件其實不需要長距離的依賴關係，只看局部內容就能預測下一個 token，模型因此學不到如何真正利用遠處的資訊，所以常需要額外合成需要跨越長距離整合資訊的任務資料。
-- 受限於訓練與服務系統：vanilla self-attention 的計算量是 $O(n^2)$，KV cache 的記憶體也隨長度線性成長，Context 拉長不只是模型的問題，訓練端需要 FlashAttention、context parallelism 等技術，推論端也要能放得下龐大的 KV cache；前面提到的 SWA 與 GQA，某種程度上都是在緩解這個成本。
+- 受限於訓練與服務系統：vanilla self-attention 的計算量是 $O(n^2)$，KV cache 的記憶體也隨長度線性成長，Context 拉長不只是模型的問題，訓練端需要 FlashAttention、context parallelism 等技術，推論端也要能放得下龐大的 KV cache；第二堂提到的 SWA 與 GQA，某種程度上都是在緩解這個成本。
 
 訓練上的幾個重點：
 
