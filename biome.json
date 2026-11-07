@@ -10,7 +10,8 @@
 			"!**/.netlify",
 			"!**/.vscode",
 			"!**/.astro",
-			"!legacy"
+			"!legacy",
+			"!public/interactive"
 		]
 	},
 	"formatter": {

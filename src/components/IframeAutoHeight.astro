@@ -1,0 +1,22 @@
+---
+// Lets an embedded interactive page (public/interactive/*) size its own
+// <iframe>. The page posts { type: "xf:iframe-height", height } whenever its
+// content changes; this listener finds the iframe whose contentWindow sent it
+// and sets the height. Only iframes marked data-autoheight are touched, and
+// only same-origin senders are trusted. Mounted per-post in BlogPost.astro.
+---
+
+<script>
+	window.addEventListener("message", (event: MessageEvent) => {
+		if (event.origin !== window.location.origin) return;
+		const data = event.data;
+		if (!data || data.type !== "xf:iframe-height" || typeof data.height !== "number") return;
+		const frames = document.querySelectorAll<HTMLIFrameElement>("iframe[data-autoheight]");
+		for (const frame of frames) {
+			if (frame.contentWindow === event.source) {
+				frame.style.height = `${Math.ceil(data.height)}px`;
+				break;
+			}
+		}
+	});
+</script>

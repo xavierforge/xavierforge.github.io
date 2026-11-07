@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{--bg:#f7f7f3;--fg:#3a3f4a;--muted:#6b6f78;--line:#b4b2a9;--cell:#ffffff;--btn:#ffffff;--btn-h:#ecebe5;
+--hbm:#D6E4F7;--hbm-s:#3F74C9;--hbm-t:#1F4E99;--sram:#DDEBD4;--sram-s:#5E9A3F;--sram-t:#2F5E12;--cu:#EFEFEF;--cu-s:#7a7a7a;
+--on:#C0DD97;--on-s:#3B6D11;--out:#5B9BE0;--out-s:#0C447C;--cell-s:#7a8aa3}
+:root[data-theme="dark"]{--bg:#2b2d33;--fg:#c9ccd3;--muted:#9a9ea8;--line:#5c6069;--cell:#3a3d45;--btn:#3a3d45;--btn-h:#474a53;
+--hbm:#2b3b55;--hbm-s:#6f98d8;--hbm-t:#a9c4ee;--sram:#2f4330;--sram-s:#7fb45e;--sram-t:#b8dba0;--cu:#3d3f46;--cu-s:#8a8d95;
+--on:#5f8a3a;--on-s:#c0dd97;--out:#2f6fb5;--out-s:#9cc3f0;--cell-s:#8a97ad}
+html,body{margin:0;background:var(--bg);color:var(--fg);font-family:"Nunito","PingFang TC","Microsoft JhengHei",sans-serif}
+#wrap{max-width:720px;width:100%;margin:0 auto;padding:8px 16px 8px;box-sizing:border-box}
+html,body{overflow:hidden}
+svg{width:100%;height:auto;display:block}
+.t{font-size:14px;fill:var(--fg)}
+.th{font-size:14px;font-weight:700;fill:var(--fg)}
+.ts{font-size:12px;fill:var(--muted)}
+.frame{fill:none;stroke:var(--fg)}
+.rules-box{fill:var(--cell);stroke:var(--line)}
+.hbm{fill:var(--hbm);stroke:var(--hbm-s)}.hbm-t{fill:var(--hbm-t)}
+.sram{fill:var(--sram);stroke:var(--sram-s)}.sram-t{fill:var(--sram-t)}
+.cu{fill:var(--cu);stroke:var(--cu-s)}
+rect.c-gray{fill:var(--cell);stroke:var(--cell-s)}
+rect.c-green{fill:var(--on);stroke:var(--on-s)}
+rect.c-blue{fill:var(--out);stroke:var(--out-s)}
+#cnt{font-size:13px;color:var(--muted);margin-top:6px}
+#desc{font-size:15px;line-height:1.7;margin:4px 0 0;min-height:104px}
+.leg{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:var(--muted);margin:4px 0 8px}
+.sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px}
+.sw-on{background:var(--on)}.sw-out{background:var(--out)}
+.btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+button{font:inherit;font-size:14px;padding:6px 14px;border:1px solid var(--line);border-radius:8px;background:var(--btn);color:var(--fg);cursor:pointer}button:hover{background:var(--btn-h)}
+</style><title>FlashAttention：逐塊計算單一 query</title></head><body><div id="wrap">
+<svg viewBox="0 0 680 390" role="img" aria-label="FlashAttention 逐塊計算單一 query 的示意圖">
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<rect x="20" y="16" width="640" height="356" rx="10" class="frame" stroke-width="1"/>
+<text class="th" x="40" y="362">GPU</text>
+<rect x="36" y="210" width="320" height="122" rx="8" class="rules-box" stroke-width="0.8" stroke-dasharray="3 3"/>
+<text class="ts" x="50" y="232">更新規則 (第 t+1 塊)</text>
+<g id="rules"><text class="t hbm-t" x="50" y="254" data-r="m_{t+1} = max(m_{t}, s_{t+1})"></text>
+<text class="t sram-t" x="50" y="276" data-r="α_{t} = e^(m_{t} − m_{t+1})"></text>
+<text class="t" x="50" y="298" data-r="N_{t+1} = α_{t}·N_{t} + e^(s_{t+1} − m_{t+1})·v_{t+1}"></text>
+<text class="t" x="50" y="320" data-r="D_{t+1} = α_{t}·D_{t} + e^(s_{t+1} − m_{t+1})"></text></g>
+<rect x="36" y="40" width="320" height="160" rx="8" class="hbm" stroke-width="1"/>
+<text class="th hbm-t" x="52" y="62">HBM</text>
+<text class="ts hbm-t" x="344" y="62" text-anchor="end">大但慢</text>
+<text class="t" x="84" y="90" text-anchor="middle">Q</text>
+<text class="t" x="168" y="90" text-anchor="middle">Kᵀ</text>
+<text class="t" x="252" y="90" text-anchor="middle">V</text>
+<text class="t" x="322" y="90" text-anchor="middle">O</text>
+<g id="mq"></g><g id="mk"></g><g id="mv"></g><g id="mo"></g>
+<text class="ts hbm-t" x="196" y="190" text-anchor="middle">只示範第 1 個 query，n = 4、d = 2</text>
+<rect x="388" y="30" width="268" height="314" rx="6" class="frame" stroke-width="0.8" stroke-dasharray="5 4"/>
+<rect x="400" y="40" width="244" height="184" rx="8" class="sram" stroke-width="1"/>
+<text class="th sram-t" x="416" y="62">SRAM</text>
+<text class="ts sram-t" x="628" y="62" text-anchor="end">小但快</text>
+<g id="sram"></g>
+<rect x="400" y="252" width="244" height="80" rx="8" class="cu" stroke-width="1"/>
+<text class="th" x="416" y="274">CU</text>
+<text class="t" id="cu1" x="416" y="298"></text>
+<text class="t" id="cu2" x="416" y="318"></text>
+<line id="aLoad" x1="358" y1="110" x2="396" y2="110" stroke-width="1.8" marker-end="url(#arrow)"/>
+<line id="aWrite" x1="398" y1="150" x2="360" y2="150" stroke-width="1.8" marker-end="url(#arrow)"/>
+<line id="aDown" x1="500" y1="226" x2="500" y2="248" stroke-width="1.8" marker-end="url(#arrow)"/>
+<line id="aUp" x1="560" y1="250" x2="560" y2="228" stroke-width="1.8" marker-end="url(#arrow)"/>
+</svg>
+<div class="leg"><span><span class="sw sw-on"></span>已讀進 SRAM</span><span><span class="sw sw-out"></span>寫回 HBM</span><span>粗體 = 這一步剛更新</span></div>
+<div id="cnt"></div>
+<p id="desc"></p>
+<div class="btns">
+<button id="bPrev">← 上一步</button><button id="bPlay">播放</button><button id="bNext">下一步 →</button><button id="bReset">重設</button>
+</div>
+</div>
+<script>
+const NS='http://www.w3.org/2000/svg';
+const sub=['₁','₂','₃','₄'];
+function rich(el){const p=el.getAttribute('data-r').split(/_\{([^}]*)\}/);let d=0;p.forEach((x,i)=>{if(!x)return;const t=document.createElementNS(NS,'tspan');t.textContent=x;const sub=i%2===1;t.setAttribute('dy',(sub?4:0)-d);d=sub?4:0;if(sub)t.setAttribute('font-size','10');el.appendChild(t);});}
+document.querySelectorAll('[data-r]').forEach(rich);
+
+const q=[1,0],K=[[1,0],[0,1],[2,0],[-1,0]],V=[[1,0],[0,1],[2,2],[0,-1]],rd=Math.SQRT2;
+const f=x=>x===-Infinity?'−∞':(Math.abs(x)<5e-4?0:x).toFixed(3);
+const fv=a=>'('+a.map(f).join(', ')+')';
+function mk(id,n,x,y,w,h,dx,dy){const g=document.getElementById(id),r=[];for(let i=0;i<n;i++){const e=document.createElementNS(NS,'rect');e.setAttribute('x',x+dx*i);e.setAttribute('y',y+dy*i);e.setAttribute('width',w);e.setAttribute('height',h);e.setAttribute('rx',2);e.setAttribute('stroke-width',0.6);e.setAttribute('class','c-gray');g.appendChild(e);r.push(e);}return r;}
+const cells={q:mk('mq',4,56,100,56,16,0,18),k:mk('mk',4,136,100,14,70,16,0),v:mk('mv',4,224,100,56,16,0,18),o:mk('mo',4,300,100,44,16,0,18)};
+const keys=['q','k','v','s','m','D','N'];
+const sg=document.getElementById('sram'),st={};
+keys.forEach((k,i)=>{const t=document.createElementNS(NS,'text');t.setAttribute('x',416);t.setAttribute('y',90+i*19);t.setAttribute('class','t');sg.appendChild(t);st[k]=t;});
+const S=[];let sr={q:'q₁ = —',k:'k = —',v:'v = —',s:'s = —',m:'m = —',D:'D = —',N:'N = —'};
+const sb=n=>'₀₁₂₃₄'[n];
+function push(o){S.push(Object.assign({hq:-1,hk:-1,hv:-1,ho:false,arrows:[],cu:['',''],ch:[],rules:false},o,{sram:Object.assign({},sr)}));}
+push({desc:'初始狀態：Q、K、V 都放在 HBM，SRAM 是空的。接下來只追蹤第 1 個 query，它的 output 就是 O 的第 1 個 row。'});
+sr.q='q₁ = '+fv(q);sr.m='m₀ = −∞';sr.D='D₀ = 0';sr.N='N₀ = (0, 0)';
+push({hq:0,arrows:['aLoad'],ch:['q','m','D','N'],desc:'把 q₁ 讀進 SRAM，它會一直留在這裡直到算完。同時初始化三個累加器：m₀ = −∞，讓第一次取 max 一定選到 s₁；D₀ = 0；N₀ = (0, 0)，因為 N 累加的是 d 維向量 e^s·v，還沒加任何一項時就是零向量。'});
+let m=-Infinity,D=0,N=[0,0];
+for(let t=0;t<4;t++){
+ sr.k='k'+sub[t]+' = '+fv(K[t]);sr.v='v'+sub[t]+' = '+fv(V[t]);
+ push({hq:0,hk:t,hv:t,arrows:['aLoad'],ch:['k','v'],desc:`讀進第 ${t+1} 塊：k${sub[t]} (Kᵀ 的第 ${t+1} 個 column) 與 v${sub[t]} (V 的第 ${t+1} 個 row) 成對送進 SRAM，`+(t?'覆蓋掉上一塊。上一塊的貢獻已經加進累加器，所以不再需要它。':'它們屬於同一個 token。')});
+ const s=(q[0]*K[t][0]+q[1]*K[t][1])/rd;sr.s='s'+sub[t]+' = '+f(s);
+ push({hq:0,hk:t,hv:t,arrows:['aDown','aUp'],ch:['s'],cu:[`s${sub[t]} = q₁ · k${sub[t]} / √d`,`   = ${f(s)}`],desc:`CU 從 SRAM 拿 q₁ 和 k${sub[t]} 算出分數 s${sub[t]} = ${f(s)}。它只是一個 scalar，用完就會被下一個分數覆蓋，所以 SRAM 裡永遠只有一個分數。naive 做法則要先把 n 個分數組成整個 row (實際上是整個 N×N 的 S) 寫進 HBM。`});
+ const mn=Math.max(m,s),sc=m===-Infinity?0:Math.exp(m-mn),w=Math.exp(s-mn);
+ const mOld=m;D=D*sc+w;N=[N[0]*sc+w*V[t][0],N[1]*sc+w*V[t][1]];m=mn;
+ sr.m=`m${sb(t+1)} = `+f(m);sr.D=`D${sb(t+1)} = `+f(D);sr.N=`N${sb(t+1)} = `+fv(N);
+ const a=`α${sb(t)}`;
+ let why=mOld===-Infinity?`這是第一塊：m₀ = −∞，所以 ${a} = e^(−∞) = 0；不過 N₀、D₀ 本來就是 0，乘上 ${a} 也不影響結果，等於直接把第一項放進去。`:(mn>mOld?`m 從 ${f(mOld)} 變成 ${f(mn)}，所以 ${a} = e^(${f(mOld)} − ${f(mn)}) = ${f(sc)}，舊的 N${sb(t)}、D${sb(t)} 都要先乘上 ${a}，換算到新的基準。`:`m 沒有變 (仍是 ${f(mn)})，所以 ${a} = e^0 = 1，等於直接把新的一項加上去。`);
+ push({hq:0,hk:t,hv:t,arrows:['aDown','aUp'],ch:['m','D','N'],rules:true,cu:[`m${sb(t+1)} = ${f(mn)},  ${a} = ${f(sc)}`,`e^(s${sub[t]} − m${sb(t+1)}) = ${f(w)}`],desc:`套用更新規則。${why}新的一項權重是 e^(s${sub[t]} − m${sb(t+1)}) = ${f(w)}，加進 D，乘上 v${sub[t]} 後加進 N。此時 N${sb(t+1)} / D${sb(t+1)} = ${fv(N.map(x=>x/D))}，就是只看前 ${t+1} 個 token 的暫時 output。`});
+}
+const o=N.map(x=>x/D);
+push({hq:0,hk:3,hv:3,arrows:['aDown','aUp'],cu:['o₁ = N₄ / D₄','   = '+fv(o)],desc:`四塊都看完了，CU 只做一次除法：o₁ = N₄ / D₄ = ${fv(o)}。之前每一步的 m、D、N 都只是中途值，已經被覆蓋掉。`});
+const ss=K.map(k=>(q[0]*k[0]+q[1]*k[1])/rd),ex=ss.map(Math.exp),Z=ex.reduce((a,b)=>a+b),nv=[0,1].map(d=>ex.reduce((a,e,j)=>a+e*V[j][d],0)/Z);
+push({hq:0,ho:true,arrows:['aWrite'],desc:`把 o₁ 寫回 HBM (O 的第 1 個 row)，這是整個過程中唯一一次寫入 HBM。驗證：naive 做法先算完整的 softmax 再乘 V，得到 ${fv(nv)}，結果完全相同。`});
+const colors={aLoad:'#639922',aWrite:'#378ADD',aDown:'#D85A30',aUp:'#D85A30'};
+window.N_STEPS=S.length;
+window.go=function(cur){const s=S[cur];
+ ['q','k','v'].forEach(k=>cells[k].forEach((e,i)=>e.setAttribute('class',s['h'+k]===i?'c-green':'c-gray')));
+ cells.o.forEach((e,i)=>e.setAttribute('class',s.ho&&i===0?'c-blue':'c-gray'));
+ keys.forEach(k=>{st[k].textContent=s.sram[k];st[k].setAttribute('class',s.ch.includes(k)?'th':'t');});
+ document.getElementById('cu1').textContent=s.cu[0];document.getElementById('cu2').textContent=s.cu[1];
+ ['aLoad','aWrite','aDown','aUp'].forEach(a=>document.getElementById(a).setAttribute('stroke',s.arrows.includes(a)?colors[a]:getComputedStyle(document.documentElement).getPropertyValue('--line').trim()));
+ document.getElementById('desc').textContent=s.desc;
+ document.querySelectorAll('#rules text').forEach(e=>e.style.fontWeight=s.rules?'700':'400');document.getElementById('rules').style.opacity=s.rules?1:0.55;
+ document.getElementById('cnt').textContent=`步驟 ${cur+1} / ${S.length}`;};
+let cur=0,timer=null;const $=id=>document.getElementById(id);
+function show(i){cur=i;go(i);}
+function stop(){clearInterval(timer);timer=null;$('bPlay').textContent='播放';}
+$('bNext').onclick=()=>{stop();if(cur<N_STEPS-1)show(cur+1);};
+$('bPrev').onclick=()=>{stop();if(cur>0)show(cur-1);};
+$('bReset').onclick=()=>{stop();show(0);};
+$('bPlay').onclick=()=>{if(timer){stop();return;}if(cur===N_STEPS-1)show(0);$('bPlay').textContent='暫停';timer=setInterval(()=>{if(cur<N_STEPS-1)show(cur+1);else stop();},3000);};
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight')$('bNext').click();if(e.key==='ArrowLeft')$('bPrev').click();});
+show(0);
+</script>
+<script>
+(function(){
+ var root=document.documentElement;
+ function pick(){try{var p=window.parent&&window.parent!==window?window.parent.document.documentElement.getAttribute('data-theme'):null;if(p)return p;}catch(e){}
+  try{var s=localStorage.getItem('theme');if(s==='light'||s==='dark')return s;}catch(e){}
+  return matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}
+ function apply(){root.setAttribute('data-theme',pick());if(window.go&&typeof cur!=='undefined')go(cur);}
+ apply();
+ try{new MutationObserver(apply).observe(window.parent.document.documentElement,{attributes:true,attributeFilter:['data-theme']});}catch(e){}
+ window.addEventListener('storage',function(e){if(e.key==='theme')apply();});
+ matchMedia('(prefers-color-scheme: dark)').addEventListener('change',apply);
+})();
+(function(){
+ if(window.parent===window)return;
+ var wrap=document.getElementById('wrap');
+ function report(){window.parent.postMessage({type:'xf:iframe-height',height:wrap.getBoundingClientRect().height},location.origin);}
+ if('ResizeObserver' in window){new ResizeObserver(report).observe(wrap);}else{window.addEventListener('resize',report);}
+ window.addEventListener('load',report);report();
+})();
+</script></body></html>
